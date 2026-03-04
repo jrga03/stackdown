@@ -13,49 +13,49 @@
 
 | # | Task | Phase | Status |
 |---|------|-------|--------|
-| 1.1 | Project Scaffold | 1 | [ ] |
-| 1.2 | Types and Constants | 1 | [ ] |
-| 1.3 | Piece Shapes | 1 | [ ] |
-| 1.4 | Board | 1 | [ ] |
-| 1.5 | SRS | 1 | [ ] |
-| 1.6 | Randomizer | 1 | [ ] |
-| 1.7 | EventBus | 1 | [ ] |
-| 1.8 | Game Mode Types | 1 | [ ] |
-| 2.1 | Gravity Timer | 2 | [ ] |
-| 2.2 | Lock Delay | 2 | [ ] |
-| 2.3 | T-Spin Detector | 2 | [ ] |
-| 2.4 | Score Manager | 2 | [ ] |
-| 2.5 | Combo Tracker | 2 | [ ] |
-| 2.6 | Game Engine | 2 | [ ] |
-| 2.7 | Engine Barrel Export | 2 | [ ] |
-| 2.8 | Practice Mode Engine | 2 | [ ] |
-| 3.1 | Color Palette | 3 | [ ] |
-| 3.2 | Block Renderer | 3 | [ ] |
-| 3.3 | Board Renderer | 3 | [ ] |
-| 3.4 | Piece Renderer | 3 | [ ] |
-| 3.5 | Animation Manager | 3 | [ ] |
-| 3.6 | Text Popup | 3 | [ ] |
-| 3.7 | Game Renderer | 3 | [ ] |
-| 4.1 | Input Mapper | 4 | [ ] |
-| 4.2 | DAS Manager | 4 | [ ] |
-| 4.3 | Keyboard Manager | 4 | [ ] |
-| 4.4 | Game Loop | 4 | [ ] |
-| 4.5 | Game Session | 4 | [ ] |
-| 5.1 | Game Screen | 5 | [ ] |
-| 5.2 | HUD Components | 5 | [ ] |
-| 5.3 | Game Layout | 5 | [ ] |
-| 5.4 | Main Menu | 5 | [ ] |
-| 5.5 | Overlays | 5 | [ ] |
-| 5.6 | App Router | 5 | [ ] |
-| 5.7 | Mode Select Screen | 5 | [ ] |
-| 5.8 | Timer Display | 5 | [ ] |
-| 5.9 | Personal Bests | 5 | [ ] |
-| 5.10 | Game Over Enhancements | 5 | [ ] |
-| 6.1 | Particle System | 6 | [ ] |
-| 6.2 | Settings Screen | 6 | [ ] |
-| 6.3 | Responsive Sizing | 6 | [ ] |
-| 6.4 | Audio Stub | 6 | [ ] |
-| 6.5 | Utilities | 6 | [ ] |
+| 1.1 | Project Scaffold | 1 | [x] |
+| 1.2 | Types and Constants | 1 | [x] |
+| 1.3 | Piece Shapes | 1 | [x] |
+| 1.4 | Board | 1 | [x] |
+| 1.5 | SRS | 1 | [x] |
+| 1.6 | Randomizer | 1 | [x] |
+| 1.7 | EventBus | 1 | [x] |
+| 1.8 | Game Mode Types | 1 | [x] |
+| 2.1 | Gravity Timer | 2 | [x] |
+| 2.2 | Lock Delay | 2 | [x] |
+| 2.3 | T-Spin Detector | 2 | [x] |
+| 2.4 | Score Manager | 2 | [x] |
+| 2.5 | Combo Tracker | 2 | [x] |
+| 2.6 | Game Engine | 2 | [x] |
+| 2.7 | Engine Barrel Export | 2 | [x] |
+| 2.8 | Practice Mode Engine | 2 | [x] |
+| 3.1 | Color Palette | 3 | [x] |
+| 3.2 | Block Renderer | 3 | [x] |
+| 3.3 | Board Renderer | 3 | [x] |
+| 3.4 | Piece Renderer | 3 | [x] |
+| 3.5 | Animation Manager | 3 | [x] |
+| 3.6 | Text Popup | 3 | [x] |
+| 3.7 | Game Renderer | 3 | [x] |
+| 4.1 | Input Mapper | 4 | [x] |
+| 4.2 | DAS Manager | 4 | [x] |
+| 4.3 | Keyboard Manager | 4 | [x] |
+| 4.4 | Game Loop | 4 | [x] |
+| 4.5 | Game Session | 4 | [x] |
+| 5.1 | Game Screen | 5 | [x] |
+| 5.2 | HUD Components | 5 | [x] |
+| 5.3 | Game Layout | 5 | [x] |
+| 5.4 | Main Menu | 5 | [x] |
+| 5.5 | Overlays | 5 | [x] |
+| 5.6 | App Router | 5 | [x] |
+| 5.7 | Mode Select Screen | 5 | [x] |
+| 5.8 | Timer Display | 5 | [x] |
+| 5.9 | Personal Bests | 5 | [x] |
+| 5.10 | Game Over Enhancements | 5 | [x] |
+| 6.1 | Particle System | 6 | [x] |
+| 6.2 | Settings Screen | 6 | [x] |
+| 6.3 | Responsive Sizing | 6 | [x] |
+| 6.4 | Audio Stub | 6 | [x] |
+| 6.5 | Utilities | 6 | [x] |
 
 ## Dependency Graph
 

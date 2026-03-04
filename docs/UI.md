@@ -60,6 +60,11 @@ MainMenu ←──────────────────────�
   └─ </GameScreen>
 ```
 
+### Overlay Behavior
+
+- **Pause overlay:** Renders on top of the frozen canvas (canvas stops updating while paused). Blocks all game input. Menu buttons (Resume, Restart, Quit) are clickable.
+- **Game over overlay:** Renders on top of the final game state. Blocks all game input. Menu buttons (Play Again, Main Menu) are clickable.
+
 ---
 
 ## Canvas–React Boundary
@@ -139,12 +144,13 @@ function useGameSession(canvasRef: RefObject<HTMLCanvasElement>, config: GameCon
     return () => session.destroy();
   }, [canvasRef, config]);
 
-  return {
-    gameState,
-    pause: () => session.pause(),
-    resume: () => session.resume(),
-    restart: () => session.restart(),
-  };
+  // Wrap session methods in stable callbacks (session is not exposed directly)
+  const pause = useCallback(() => sessionRef.current?.pause(), []);
+  const resume = useCallback(() => sessionRef.current?.resume(), []);
+  const restart = useCallback(() => sessionRef.current?.restart(), []);
+  const quit = useCallback(() => sessionRef.current?.destroy(), []);
+
+  return { gameState, pause, resume, restart, quit };
 }
 ```
 
@@ -164,6 +170,14 @@ private maybeUpdateReact(snapshot: GameSnapshot): void {
   this.stateCallback?.(snapshot);
 }
 ```
+
+### Cleanup
+
+`GameSession.destroy()` performs the following cleanup chain:
+1. Stops the `GameLoop` (cancels the `requestAnimationFrame` callback).
+2. Calls `KeyboardManager.detach()` (removes DOM event listeners, clears DAS state).
+3. Calls `GameRenderer.destroy()` (releases `OffscreenCanvas` caches).
+4. Calls `EventBus.removeAllListeners()` (prevents stale callbacks).
 
 ---
 
@@ -275,6 +289,11 @@ When `remainingMs <= 10000`, the component adds a `timer-warning` class that app
 ### ComboPopup
 
 React-based combo notification (separate from the canvas text popup system). Appears when a combo event fires via the EventBus.
+
+### Task Scope
+
+- **Task 5.2 (HUD Components):** ScoreDisplay, LevelDisplay, LinesDisplay, HoldPiece, NextQueue.
+- **Task 5.8 (Timer Display):** TimerDisplay (practice mode only).
 
 ---
 

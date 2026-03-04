@@ -12,6 +12,10 @@ Each frame follows this order:
 4. **Active piece** — The current falling piece, with interpolation for smooth gravity.
 5. **Effects** — Line clear animations, lock flash, text popups, particles.
 
+### Lock Flash
+
+When a piece locks, all cells of the locked piece flash white at `rgba(255, 255, 255, 0.6)` for 100ms (rendered as a single-frame overlay on top of the normal block), then return to standard block rendering. This is a brief visual confirmation, not an animation — it renders for one frame then clears.
+
 ---
 
 ## Block Rendering
@@ -26,10 +30,10 @@ Given a cell at pixel position `(px, py)` with size `cellSize`:
 
 1. **Base fill:** Fill entire cell with the piece's base color.
 
-2. **Center face gradient:** Draw the inner rectangle (inset by bevel width) with a vertical linear gradient:
-   - Top: `rgba(255, 255, 255, 0.15)` (lighter)
-   - Middle: `rgba(255, 255, 255, 0.0)` (neutral)
-   - Bottom: `rgba(0, 0, 0, 0.1)` (slightly darker)
+2. **Center face gradient:** Draw the inner rectangle (inset by bevel width) with a vertical linear gradient from `y = bevelWidth` to `y = cellSize - bevelWidth`:
+   - Top (0%): `rgba(255, 255, 255, 0.15)` (lighter)
+   - Middle (50%): `rgba(255, 255, 255, 0.0)` (neutral)
+   - Bottom (100%): `rgba(0, 0, 0, 0.1)` (slightly darker)
 
 3. **Top bevel (trapezoid):** `rgba(255, 255, 255, 0.4)` — bright highlight.
    - Outer: full cell top edge
@@ -97,6 +101,7 @@ const BOARD_COLORS = {
   gridLine: 'rgba(255, 255, 255, 0.06)',    // Subtle grid lines
   gridBorder: '#1A1A2E',                    // Border around playfield
   ghostPieceAlpha: 0.2,                     // Ghost piece transparency
+  garbage: '#8A8A8A',                       // Medium gray (for future garbage rows)
 };
 ```
 
@@ -231,6 +236,10 @@ interface TextPopup {
 }
 ```
 
+### Default Duration
+
+Text popup default display duration: **2000ms**. Breakdown: fade-in 100ms, hold 1600ms, float-up + fade-out 300ms.
+
 ### Practice Mode: "TIME'S UP!" Popup
 
 When the practice mode timer expires (game over with `reason: 'timeout'`), the TextPopup system displays a large "TIME'S UP!" popup centered on the playfield. Uses the same animation phases as other text popups (pop-in → settle → normal → fade out) with a yellow color and larger font size than standard action popups.
@@ -281,6 +290,10 @@ Grid lines are static and only change on resize. Caching them to an `OffscreenCa
 ### Hold and Next Queue
 
 Hold piece and next queue are drawn on **separate small canvases** (not the main playfield canvas). They only re-render when the held piece or next queue changes, not every frame.
+
+**Canvas dimensions:**
+- **Hold piece:** `4 × cellSize` wide by `3 × cellSize` tall (accommodates all piece shapes centered in their bounding box).
+- **Next queue:** `4 × cellSize` wide by `(3 × cellSize × 5) + (gap × 4)` tall, where `gap = cellSize × 0.5`. Each preview piece is centered within its `4 × 3` cell area.
 
 ---
 

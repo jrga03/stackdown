@@ -231,6 +231,35 @@ All other engine behavior (SRS, scoring formula, lock delay, combos, back-to-bac
 - **Frame interpolation** is passed to the renderer for smooth visuals between ticks.
 - Frame time is clamped to 250ms to prevent spiraling when the tab is backgrounded.
 
+## Error Handling
+
+- **Spawn collision:** When a newly spawned piece overlaps occupied cells, the engine emits a `GAME_OVER` event with `reason: 'topout'`. This is the standard game-over path, not an error.
+- **Renderer errors:** If the renderer throws during `draw()`, the error is caught and logged to `console.error`. The game loop continues — a single dropped frame is preferable to a crash.
+- **localStorage failures:** If `localStorage` is unavailable or full (e.g., private browsing mode), settings and personal bests fall back to defaults silently. No error UI is shown.
+
+## Resource Cleanup
+
+`GameSession.destroy()` follows this cleanup chain:
+
+```
+GameSession.destroy()
+  ├─ GameLoop.stop()           — cancels requestAnimationFrame
+  ├─ KeyboardManager.detach()  — removes DOM listeners, clears DAS state
+  ├─ GameRenderer.destroy()    — releases OffscreenCanvas caches
+  └─ EventBus.removeAllListeners()  — prevents stale callbacks
+```
+
+This chain is called by the `useGameSession` cleanup effect on unmount, ensuring no memory leaks on game restart or navigation.
+
+## Pause Semantics
+
+When paused:
+- `engine.tick(deltaMs)` is a no-op: gravity, lock delay, and practice timer are all frozen.
+- `engine.applyAction()` ignores all actions except `PAUSE` (to unpause).
+- `KeyboardManager` is detached (no key events processed).
+- Snapshots reflect the frozen state — the renderer draws the last frame before pause.
+- When resumed, all timers resume from where they paused (accumulated time is preserved, not reset).
+
 ## Multiplayer Readiness
 
 The architecture includes several provisions for future multiplayer:

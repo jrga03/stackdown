@@ -263,6 +263,27 @@ class KeyboardManager {
 3. `detach()` is called when the game pauses, ends, or the component unmounts.
 4. DAS state is cleared on detach to prevent stuck keys.
 
+### Input During Pause and Game Over
+
+When `PAUSE` is pressed:
+1. `engine.applyAction(PAUSE)` fires immediately (PAUSE is an immediate action).
+2. `KeyboardManager.detach()` is called by `GameSession`.
+3. All DAS state is fully reset (accumulators cleared, held flags cleared).
+4. On resume, `KeyboardManager.attach()` is called. Input processing restarts from a clean state — no stuck keys.
+
+During game over: all game input is ignored. Only menu button clicks (React) are processed.
+
+### Window Focus Handling
+
+`KeyboardManager` must handle `window.blur` to prevent stuck keys when the user switches tabs:
+
+1. On `window` `blur` event: call `dasManager.releaseAll()` to simulate keyup for all held keys, clearing all DAS state.
+2. On `window` `focus` event: no special action needed — input processing resumes normally from a clean state.
+
+### Input During Line Clear Animations
+
+The engine continues processing input during line clear animations. Animations are renderer-only visual effects — the engine has already resolved the line clear and spawned the next piece before the animation begins. Player input applies to the newly spawned piece immediately.
+
 ---
 
 ## Integration with Game Loop

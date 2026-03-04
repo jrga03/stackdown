@@ -27,9 +27,10 @@ Implementation is broken into 6 phases with 39 granular tasks. Each task has a d
 1. **Check status** in `docs/tasks/INDEX.md` for the task list and dependency graph
 2. **Read the task file** at `docs/tasks/{task-id}.md` — it lists spec references, prerequisites, files to create/modify, and acceptance criteria
 3. **Read only the referenced spec sections** from the module docs (ENGINE.md, RENDERER.md, INPUT.md, UI.md) — don't read the whole doc unless needed
-4. **Implement** following the acceptance criteria exactly
-5. **Verify**: `npx tsc --noEmit` passes, tests pass, no circular imports
-6. **Mark complete** in `docs/tasks/INDEX.md`
+4. **Write tests first** (Phases 1-2, 4): Engine and input tasks use TDD. Write a failing test, implement the minimum to pass, refactor. Renderer and UI tasks skip TDD — verify visually.
+5. **Implement** following the acceptance criteria exactly
+6. **Verify**: `npx tsc --noEmit` passes, `npx vitest run` passes, no circular imports
+7. **Mark complete** in `docs/tasks/INDEX.md`
 
 ### Phase overview
 

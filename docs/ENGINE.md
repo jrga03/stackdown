@@ -392,6 +392,8 @@ const O_OFFSETS: Position[][] = [
 ];
 ```
 
+> **Note:** O-piece does not use wall kicks (only 1 test per rotation). After any O-piece rotation, `lastKickIndex` is set to `0`.
+
 ---
 
 ## 7-Bag Randomizer
@@ -476,12 +478,12 @@ T-Spin detection applies **only** to T pieces and **only** when the last action 
 3. Any successful move (left, right, down) or rotation resets the timer back to 500ms, if resets remain.
 4. Each reset decrements the reset counter. Move resets and rotation resets share the same counter (15 total).
 5. When the timer reaches 0, the piece locks in place.
-6. If the piece moves off the surface (e.g., the row below it clears), the lock delay deactivates until it lands again.
+6. If the piece moves off the surface (e.g., a line clear beneath it removes supporting blocks), the lock delay deactivates. The timer resets to 500ms and the reset counter restores to 15. When the piece lands on a new surface, lock delay reactivates with a fresh timer and full resets.
 
 ```typescript
 class LockDelay {
   private timer: number;        // ms remaining
-  private resetCount: number;   // resets used
+  private resetsRemaining: number;   // resets remaining (starts at 15, counts down)
 
   constructor();
   start(): void;
@@ -568,6 +570,8 @@ All base points are multiplied by the current level.
 | T-Spin Mini Single | 200 |
 | T-Spin Mini Double | 400 |
 
+> **Note:** T-Spin base points **replace** (not add to) normal line clear base points. For example, a T-Spin Single awards 800 × level, not (800 + 100) × level.
+
 ### Score Formula
 
 ```
@@ -576,7 +580,7 @@ points = basePoints × level
 
 ### Back-to-Back Bonus
 
-- **Applicable to:** Quad and any T-Spin clear (including Mini).
+- **Applicable to:** Quad (4-line clear) and full T-Spin clears. T-Spin Mini clears do **not** qualify for back-to-back.
 - **Multiplier:** ×1.5 (applied as `Math.floor(points * 1.5)`).
 - The back-to-back flag is set after a difficult clear and persists until a non-difficult line clear occurs.
 - A non-line-clearing action (piece locks without clearing) does **not** reset back-to-back.
@@ -611,10 +615,15 @@ class ScoreManager {
   private backToBack: boolean;
 
   constructor(options?: { startLevel?: number; fixedLevel?: boolean });
-  processLineClear(count: number, isTSpin: boolean, isTSpinMini: boolean): number;
+  // `level` is initialized to `startLevel` (default 1).
+  // When `fixedLevel` is true, `checkLevelUp()` always returns null.
+
+  processLineClear(count: number, isTSpin: boolean, isTSpinMini: boolean, combo: number): number;
+  // Returns total points awarded for this clear: (basePoints × level [× 1.5 if B2B]) + comboBonus.
+  // Combo bonus is calculated internally — no separate call needed.
+
   processTSpinNoLines(mini: boolean): number;
   addDropPoints(cells: number, isHardDrop: boolean): void;
-  addComboBonus(): number;
   checkLevelUp(): number | null;  // returns new level or null; always null when fixedLevel is true
   getScore(): number;
   getLevel(): number;
@@ -687,10 +696,11 @@ Operations performed each tick:
 1. If paused or game over: no-op.
 2. Update elapsed time.
 3. **Practice mode timer:** If mode is `PRACTICE`, decrement `remainingMs` by `deltaMs`. Emit `TIME_WARNING` once when `remainingMs` crosses below 10000ms. If `remainingMs <= 0`, trigger game over with `reason: 'timeout'`.
+   - **Pause behavior:** When paused, `remainingMs` does not decrement. The timer freezes and resumes from the same value on unpause.
 4. Apply gravity: accumulate time, drop piece by computed cells.
 5. Process lock delay: if piece is on surface, count down timer. Lock piece if timer expires.
 6. After locking: clear full rows, update score, check level up (skipped in practice mode), spawn next piece.
-7. If new piece cannot spawn (collision at spawn position): game over with `reason: 'topout'`.
+7. If new piece cannot spawn (any block of the new piece overlaps an occupied cell at spawn position row 18): game over with `reason: 'topout'`. The colliding piece is not placed on the grid.
 
 #### `applyAction(action: GameAction): void`
 
@@ -708,6 +718,10 @@ Applies a discrete player action. Called by the input system when a key event or
 | `HOLD` | Swap active piece with hold, or hold current and spawn next. Once per piece. |
 | `PAUSE` | Toggle pause state |
 
+> **Soft drop and gravity interaction:** When soft drop is active (key held), the gravity timer does not advance. Soft drop provides its own downward movement, replacing gravity for that duration.
+
+> **Hard drop lock behavior:** Hard drop locks the piece instantly — it bypasses lock delay entirely. No timer, no resets. The piece is placed at the lowest valid position and locked in the same tick.
+
 #### `getSnapshot(): GameSnapshot`
 
 Returns a read-only snapshot of the current game state. This is a plain value object (no methods, no circular references) suitable for:
@@ -716,6 +730,8 @@ Returns a read-only snapshot of the current game state. This is a plain value ob
 - Serializing with `JSON.stringify()` for network transmission.
 
 #### `static fromSnapshot(snapshot: GameSnapshot, eventBus: EventBus): GameEngine`
+
+*(Future feature — not implemented in initial release.)*
 
 Reconstructs a `GameEngine` from a serialized snapshot. Used for:
 - Server reconciliation in multiplayer.
