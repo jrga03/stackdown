@@ -112,11 +112,11 @@ export class AnimationManager {
     return this.animations.length > 0;
   }
 
-  getAnimatingRows(): number[] {
-    const rows: number[] = [];
+  getAnimatingRows(): Set<number> {
+    const rows = new Set<number>();
     for (const anim of this.animations) {
       for (const row of anim.rows) {
-        rows.push(row);
+        rows.add(row);
       }
     }
     return rows;

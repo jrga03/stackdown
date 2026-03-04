@@ -62,10 +62,8 @@ const PIECE_SHAPES: Record<PieceType, readonly [Position[], Position[], Position
 /**
  * Returns the block positions for a given piece type and rotation state.
  * Positions are relative to the bounding box origin (top-left corner).
- * Returns a new array on each call to prevent mutation.
+ * Returns the source array directly — callers must not mutate.
  */
-export function getBlocks(type: PieceType, rotation: RotationState): Position[] {
-  const shape = PIECE_SHAPES[type][rotation];
-  // Return a shallow copy of the positions to prevent mutation of the source data
-  return shape.map((pos) => ({ x: pos.x, y: pos.y }));
+export function getBlocks(type: PieceType, rotation: RotationState): readonly Position[] {
+  return PIECE_SHAPES[type][rotation];
 }

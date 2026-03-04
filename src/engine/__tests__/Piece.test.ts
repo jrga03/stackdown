@@ -3,7 +3,7 @@ import { getBlocks } from '../Piece';
 import { PieceType, RotationState, Position } from '../types';
 
 // Helper to sort positions for comparison (order-independent)
-function sortPositions(positions: Position[]): Position[] {
+function sortPositions(positions: readonly Position[]): Position[] {
   return [...positions].sort((a, b) => a.y - b.y || a.x - b.x);
 }
 
@@ -315,14 +315,13 @@ describe('Piece shapes', () => {
     }
   });
 
-  // ── Test: getBlocks returns a new array each time (immutability) ──
+  // ── Test: getBlocks returns the same readonly source array ──
 
-  describe('immutability', () => {
-    it('returns a new array on each call', () => {
+  describe('identity', () => {
+    it('returns the same array reference for same type and rotation', () => {
       const a = getBlocks(PieceType.T, RotationState.SPAWN);
       const b = getBlocks(PieceType.T, RotationState.SPAWN);
-      expect(a).not.toBe(b);
-      expect(a).toEqual(b);
+      expect(a).toBe(b);
     });
   });
 });

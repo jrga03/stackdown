@@ -1,7 +1,55 @@
+import { PieceType } from '../engine';
+import { PIECE_COLORS, BOARD_COLORS } from './colors';
+
+type DrawContext = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+
 const BEVEL_RATIO = 0.15;
 
-export function drawBlock(
+/** All block color keys: 7 piece types + garbage. */
+const BLOCK_COLOR_KEYS: readonly (PieceType | 'garbage')[] = [
+  PieceType.I, PieceType.O, PieceType.T, PieceType.S,
+  PieceType.Z, PieceType.J, PieceType.L, 'garbage',
+];
+
+/**
+ * Pre-rendered block templates at a specific cell size.
+ * Each piece type (+ garbage) gets a cellSize x cellSize OffscreenCanvas.
+ */
+export class BlockTemplateCache {
+  private cache = new Map<PieceType | 'garbage', OffscreenCanvas>();
+
+  rebuild(cellSize: number): void {
+    this.cache.clear();
+    for (const key of BLOCK_COLOR_KEYS) {
+      const canvas = new OffscreenCanvas(cellSize, cellSize);
+      const ctx = canvas.getContext('2d')!;
+      const color = key === 'garbage' ? BOARD_COLORS.garbage : PIECE_COLORS[key];
+      drawBlock(ctx, 0, 0, cellSize, color);
+      this.cache.set(key, canvas);
+    }
+  }
+
+  get(key: PieceType | 'garbage'): OffscreenCanvas | undefined {
+    return this.cache.get(key);
+  }
+}
+
+/** Draw a cached block template at (x, y) via drawImage. */
+export function drawCachedBlock(
   ctx: CanvasRenderingContext2D,
+  cache: BlockTemplateCache,
+  x: number,
+  y: number,
+  key: PieceType | 'garbage',
+): void {
+  const template = cache.get(key);
+  if (template) {
+    ctx.drawImage(template, x, y);
+  }
+}
+
+export function drawBlock(
+  ctx: DrawContext,
   x: number,
   y: number,
   cellSize: number,

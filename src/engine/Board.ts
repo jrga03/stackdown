@@ -41,7 +41,7 @@ export class Board {
    * - 0 <= y < BOARD_HEIGHT
    * - grid[y][x] === null
    */
-  isValidPosition(blocks: Position[]): boolean {
+  isValidPosition(blocks: readonly Position[]): boolean {
     for (const block of blocks) {
       const { x, y } = block;
       if (x < 0 || x >= BOARD_WIDTH) return false;
@@ -52,7 +52,7 @@ export class Board {
   }
 
   /** Writes the piece type into the grid at the given block positions. */
-  lockPiece(blocks: Position[], type: PieceType): void {
+  lockPiece(blocks: readonly Position[], type: PieceType): void {
     for (const block of blocks) {
       this.grid[block.y]![block.x] = type;
     }

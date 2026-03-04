@@ -1,4 +1,4 @@
-import { drawBlock } from './BlockRenderer';
+import { drawBlock, type BlockTemplateCache, drawCachedBlock } from './BlockRenderer';
 import {
   getBlocks,
   type ActivePieceState,
@@ -19,9 +19,9 @@ export function drawActivePiece(
   ctx: CanvasRenderingContext2D,
   piece: ActivePieceState,
   cellSize: number,
+  cache?: BlockTemplateCache,
 ): void {
   const blocks = getBlocks(piece.type, piece.rotation);
-  const color = PIECE_COLORS[piece.type];
 
   for (const block of blocks) {
     const absRow = block.y + piece.position.y;
@@ -30,7 +30,11 @@ export function drawActivePiece(
 
     const px = (block.x + piece.position.x) * cellSize;
     const py = (absRow - BUFFER_ROWS) * cellSize;
-    drawBlock(ctx, px, py, cellSize, color);
+    if (cache) {
+      drawCachedBlock(ctx, cache, px, py, piece.type);
+    } else {
+      drawBlock(ctx, px, py, cellSize, PIECE_COLORS[piece.type]);
+    }
   }
 }
 

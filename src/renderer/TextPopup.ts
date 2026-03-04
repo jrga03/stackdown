@@ -11,6 +11,7 @@ const DEFAULT_FONT_SIZE = 24;
 const DEFAULT_FLOAT_SPEED = 40; // px/sec
 
 const FONT_FAMILY = "'Segoe UI', Arial, sans-serif";
+const OUTLINE_OFFSETS: readonly [number, number][] = [[-2, 0], [2, 0], [0, -2], [0, 2]];
 
 interface TextPopupData {
   text: string;
@@ -172,8 +173,7 @@ export class TextPopupManager {
 
       // Dark outline: 4 offset draws
       ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-      const outlineOffsets: [number, number][] = [[-2, 0], [2, 0], [0, -2], [0, 2]];
-      for (const [ox, oy] of outlineOffsets) {
+      for (const [ox, oy] of OUTLINE_OFFSETS) {
         ctx.fillText(popup.text, ox, oy);
       }
 

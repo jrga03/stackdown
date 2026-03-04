@@ -45,6 +45,9 @@ export class GameEngine {
   private isGameOver = false;
   private elapsedMs = 0;
 
+  private gridDirty = true;
+  private cachedGridCopy: Grid | null = null;
+
   private gameMode: GameMode;
   private remainingMs: number | null;
   private timeWarningEmitted = false;
@@ -175,7 +178,11 @@ export class GameEngine {
   }
 
   getSnapshot(): GameSnapshot {
-    const gridCopy: Grid = this.board.getGrid().map((row) => [...row]);
+    if (this.gridDirty || !this.cachedGridCopy) {
+      this.cachedGridCopy = this.board.getGrid().map((row) => [...row]);
+      this.gridDirty = false;
+    }
+    const gridCopy = this.cachedGridCopy;
 
     let activePieceCopy: ActivePieceState | null = null;
     if (this.activePiece) {
@@ -405,6 +412,7 @@ export class GameEngine {
 
     // Lock the piece onto the board
     this.board.lockPiece(blocks, piece.type);
+    this.gridDirty = true;
 
     this.eventBus.emit(GameEventType.PIECE_LOCKED, {
       type: piece.type,

@@ -1,13 +1,14 @@
 import {
   type GameSnapshot,
+  type Grid,
   BOARD_HEIGHT,
   VISIBLE_HEIGHT,
   BOARD_WIDTH,
   EventBus,
   getBlocks,
 } from '../engine';
-import { PIECE_COLORS, BOARD_COLORS } from './colors';
-import { drawBlock } from './BlockRenderer';
+import { BOARD_COLORS } from './colors';
+import { BlockTemplateCache, drawCachedBlock } from './BlockRenderer';
 import { BoardRenderer } from './BoardRenderer';
 import { drawActivePiece, drawGhostPiece } from './PieceRenderer';
 import { AnimationManager } from './AnimationManager';
@@ -20,9 +21,15 @@ export class GameRenderer {
   private boardRenderer: BoardRenderer;
   private animationManager: AnimationManager;
   private textPopupManager: TextPopupManager;
+  private blockCache: BlockTemplateCache;
   private cellSize = 0;
   private boardPixelWidth = 0;
   private boardPixelHeight = 0;
+
+  // Ghost Y memoization
+  private lastGhostY = 0;
+  private lastGhostPieceKey = '';
+  private lastGridRef: Grid | null = null;
 
   constructor(canvas: HTMLCanvasElement, eventBus: EventBus) {
     const ctx = canvas.getContext('2d', { alpha: false });
@@ -30,6 +37,7 @@ export class GameRenderer {
       throw new Error('Failed to get 2D rendering context');
     }
     this.ctx = ctx;
+    this.blockCache = new BlockTemplateCache();
     this.boardRenderer = new BoardRenderer();
     this.animationManager = new AnimationManager(eventBus);
     this.textPopupManager = new TextPopupManager(eventBus);
@@ -39,6 +47,9 @@ export class GameRenderer {
     this.cellSize = Math.floor(Math.min(width / BOARD_WIDTH, height / VISIBLE_HEIGHT));
     this.boardPixelWidth = BOARD_WIDTH * this.cellSize;
     this.boardPixelHeight = VISIBLE_HEIGHT * this.cellSize;
+
+    // Regenerate block template cache
+    this.blockCache.rebuild(this.cellSize);
 
     // Regenerate grid cache
     this.boardRenderer.createGridCache(
@@ -74,7 +85,7 @@ export class GameRenderer {
     // 3. Draw locked blocks (visible rows only, skip animating rows)
     for (let row = BUFFER_ROWS; row < BOARD_HEIGHT; row++) {
       // Skip rows that are being animated
-      if (animatingRows.indexOf(row) !== -1) continue;
+      if (animatingRows.has(row)) continue;
 
       const gridRow = snapshot.grid[row];
       if (!gridRow) continue;
@@ -86,19 +97,18 @@ export class GameRenderer {
         if (cell !== null && cell !== undefined) {
           const px = col * cellSize;
           const py = screenRow * cellSize;
-          const color = PIECE_COLORS[cell];
-          drawBlock(ctx, px, py, cellSize, color);
+          drawCachedBlock(ctx, this.blockCache, px, py, cell);
         }
       }
     }
 
     // 4. Draw ghost piece
     if (snapshot.activePiece) {
-      const ghostY = this.calculateGhostY(snapshot);
+      const ghostY = this.getGhostY(snapshot);
       drawGhostPiece(ctx, snapshot.activePiece, ghostY, cellSize);
 
       // 5. Draw active piece
-      drawActivePiece(ctx, snapshot.activePiece, cellSize);
+      drawActivePiece(ctx, snapshot.activePiece, cellSize, this.blockCache);
     }
 
     // 6. Draw line clear animations
@@ -106,6 +116,27 @@ export class GameRenderer {
 
     // 7. Draw text popups
     this.textPopupManager.draw(ctx);
+  }
+
+  /** Return memoized ghost Y; recalculate only when piece state or grid changes. */
+  private getGhostY(snapshot: GameSnapshot): number {
+    const piece = snapshot.activePiece;
+    if (!piece) return 0;
+
+    const key = `${piece.type}:${piece.position.x}:${piece.position.y}:${piece.rotation}`;
+    // Reference comparison works because GameEngine.getSnapshot() returns
+    // the same cached grid object between piece locks.
+    const gridChanged = snapshot.grid !== this.lastGridRef;
+
+    if (key === this.lastGhostPieceKey && !gridChanged) {
+      return this.lastGhostY;
+    }
+
+    const ghostY = this.calculateGhostY(snapshot);
+    this.lastGhostY = ghostY;
+    this.lastGhostPieceKey = key;
+    this.lastGridRef = snapshot.grid;
+    return ghostY;
   }
 
   /**

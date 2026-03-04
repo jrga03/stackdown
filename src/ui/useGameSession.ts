@@ -2,6 +2,14 @@ import { useRef, useEffect, useState, useCallback } from 'react';
 import { GameSession } from '../game/GameSession';
 import { type GameConfig, GameMode, type PieceType } from '../engine';
 
+function arraysEqual(a: PieceType[], b: PieceType[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
 export interface GameUIState {
   score: number;
   level: number;
@@ -41,19 +49,20 @@ export function useGameSession(
     sessionRef.current = session;
 
     session.onStateUpdate((snapshot) => {
-      setGameState({
+      const newQueue = snapshot.nextQueue.slice(0, 5);
+      setGameState((prev) => ({
         score: snapshot.score,
         level: snapshot.level,
         linesCleared: snapshot.linesCleared,
         holdPiece: snapshot.holdPiece,
-        nextQueue: snapshot.nextQueue.slice(0, 5),
+        nextQueue: arraysEqual(prev.nextQueue, newQueue) ? prev.nextQueue : newQueue,
         isPaused: snapshot.isPaused,
         isGameOver: snapshot.isGameOver,
         combo: snapshot.combo,
         backToBack: snapshot.backToBack,
         gameMode: snapshot.gameMode,
         remainingMs: snapshot.remainingMs,
-      });
+      }));
     });
 
     session.start();
