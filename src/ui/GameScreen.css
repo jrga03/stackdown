@@ -139,3 +139,10 @@
   font-size: 16px;
   letter-spacing: 1px;
 }
+
+/* Scoreboard */
+
+.scoreboard-list { display: flex; flex-direction: column; gap: 4px; font-variant-numeric: tabular-nums; }
+.scoreboard-row { display: flex; justify-content: center; gap: 16px; font-size: 14px; color: rgba(255,255,255,0.6); }
+.scoreboard-row-highlight { color: #FFD600; font-weight: bold; }
+.scoreboard-header { font-size: 11px; font-weight: bold; color: rgba(255,255,255,0.4); letter-spacing: 2px; text-align: center; }

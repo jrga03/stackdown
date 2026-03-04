@@ -1,9 +1,9 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import { useGameSession } from './useGameSession';
 import { HUD } from './HUD';
 import { PauseOverlay } from './PauseOverlay';
 import { GameOverOverlay } from './GameOverOverlay';
-import { usePersonalBests } from '../hooks/usePersonalBests';
+import { useScoreboard } from '../hooks/useScoreboard';
 import { type GameConfig, GameMode } from '../engine';
 import './GameScreen.css';
 
@@ -18,20 +18,29 @@ export function GameScreen({ gameConfig, onQuit }: GameScreenProps) {
     canvasRef,
     gameConfig,
   );
-  const { checkAndUpdate } = usePersonalBests();
-  const [isNewBest, setIsNewBest] = useState(false);
+  const { scoreboard, addScore } = useScoreboard();
+  const [currentRank, setCurrentRank] = useState<number | null>(null);
 
-  // Check personal best when game ends
+  // Record score when game ends
   useEffect(() => {
     if (gameState.isGameOver) {
-      const newBest = checkAndUpdate(gameState.gameMode, gameState.score);
-      setIsNewBest(newBest);
+      const { rank } = addScore(gameState.gameMode, {
+        score: gameState.score,
+        level: gameState.level,
+        lines: gameState.linesCleared,
+      });
+      setCurrentRank(rank);
     }
   }, [gameState.isGameOver]);
 
-  // Reset new best flag on restart
+  const entries = useMemo(() => {
+    const key = gameState.gameMode === GameMode.MARATHON ? 'marathon' : 'practice';
+    return scoreboard[key];
+  }, [scoreboard, gameState.gameMode]);
+
+  // Reset rank on restart
   const handleRestart = () => {
-    setIsNewBest(false);
+    setCurrentRank(null);
     restart();
   };
 
@@ -83,7 +92,8 @@ export function GameScreen({ gameConfig, onQuit }: GameScreenProps) {
           level={gameState.level}
           lines={gameState.linesCleared}
           gameMode={gameState.gameMode}
-          isNewBest={isNewBest}
+          entries={entries}
+          currentRank={currentRank}
           onPlayAgain={handleRestart}
           onMainMenu={onQuit}
         />

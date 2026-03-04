@@ -4,16 +4,18 @@ import './MainMenu.css';
 
 interface MainMenuProps {
   onPlay: () => void;
+  onScores: () => void;
   onSettings: () => void;
 }
 
-export function MainMenu({ onPlay, onSettings }: MainMenuProps) {
+export function MainMenu({ onPlay, onScores, onSettings }: MainMenuProps) {
   const items: MenuItemType[] = useMemo(
     () => [
       { kind: 'button', onActivate: onPlay },
+      { kind: 'button', onActivate: onScores },
       { kind: 'button', onActivate: onSettings },
     ],
-    [onPlay, onSettings],
+    [onPlay, onScores, onSettings],
   );
 
   const { getItemProps } = useMenuNavigation({ items });
@@ -26,6 +28,9 @@ export function MainMenu({ onPlay, onSettings }: MainMenuProps) {
           PLAY
         </button>
         <button className={`menu-button ${getItemProps(1).className}`} onMouseEnter={getItemProps(1).onMouseEnter} onClick={getItemProps(1).onClick}>
+          SCORES
+        </button>
+        <button className={`menu-button ${getItemProps(2).className}`} onMouseEnter={getItemProps(2).onMouseEnter} onClick={getItemProps(2).onClick}>
           SETTINGS
         </button>
       </div>

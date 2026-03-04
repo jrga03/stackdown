@@ -1,13 +1,15 @@
 import { useMemo } from 'react';
 import { GameMode } from '../engine';
 import { useMenuNavigation, type MenuItemType } from '../hooks/useMenuNavigation';
+import { type ScoreEntry } from '../hooks/useScoreboard';
 
 interface GameOverOverlayProps {
   score: number;
   level: number;
   lines: number;
   gameMode: GameMode;
-  isNewBest: boolean;
+  entries: ScoreEntry[];
+  currentRank: number | null;
   onPlayAgain: () => void;
   onMainMenu: () => void;
 }
@@ -17,10 +19,13 @@ export function GameOverOverlay({
   level,
   lines,
   gameMode,
-  isNewBest,
+  entries,
+  currentRank,
   onPlayAgain,
   onMainMenu,
 }: GameOverOverlayProps) {
+  const isNewBest = currentRank === 0;
+
   const items: MenuItemType[] = useMemo(
     () => [
       { kind: 'button', onActivate: onPlayAgain },
@@ -43,6 +48,31 @@ export function GameOverOverlay({
           <div>Score: {score.toLocaleString()}</div>
           <div>Level: {level}</div>
           <div>Lines: {lines}</div>
+        </div>
+        <div className="scoreboard-header">TOP 5</div>
+        <div className="scoreboard-list">
+          {Array.from({ length: 5 }, (_, i) => {
+            const entry = entries[i];
+            const isHighlighted = currentRank === i;
+            return (
+              <div
+                key={i}
+                className={`scoreboard-row${isHighlighted ? ' scoreboard-row-highlight' : ''}`}
+              >
+                <span style={{ width: 20 }}>{i + 1}.</span>
+                {entry ? (
+                  <>
+                    <span style={{ width: 80, textAlign: 'right' }}>{entry.score.toLocaleString()}</span>
+                    <span style={{ width: 40, textAlign: 'right' }}>L{entry.level}</span>
+                    <span style={{ width: 50, textAlign: 'right' }}>{entry.lines}ln</span>
+                    <span style={{ width: 80, textAlign: 'right' }}>{entry.date || '\u2014'}</span>
+                  </>
+                ) : (
+                  <span>{'\u2014'}</span>
+                )}
+              </div>
+            );
+          })}
         </div>
         <button className={`menu-button ${getItemProps(0).className}`} onMouseEnter={getItemProps(0).onMouseEnter} onClick={getItemProps(0).onClick}>
           PLAY AGAIN
