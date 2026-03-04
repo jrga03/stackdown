@@ -1,0 +1,24 @@
+.main-menu {
+  width: 100vw;
+  height: 100vh;
+  background: #0A0A12;
+  color: #fff;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+}
+
+.game-title {
+  font-size: 72px;
+  letter-spacing: 8px;
+  margin: 0;
+}
+
+.menu-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

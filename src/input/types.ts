@@ -29,5 +29,6 @@ export const DEFAULT_KEY_BINDINGS: KeyBindings = {
  * These are secondary bindings (e.g., KeyC also maps to HOLD).
  */
 export const EXTRA_BINDINGS: ReadonlyArray<readonly [string, GameAction]> = [
+  ['KeyX', GameAction.ROTATE_CW],
   ['KeyC', GameAction.HOLD],
 ];

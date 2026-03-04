@@ -1,0 +1,133 @@
+.game-screen {
+  width: 100vw;
+  height: 100vh;
+  background: #0A0A12;
+  color: #fff;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+.game-layout {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px;
+  height: 100vh;
+  padding: 20px;
+}
+
+.side-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 120px;
+  padding-top: 20px;
+}
+
+.playfield-container {
+  display: flex;
+  align-items: flex-start;
+  padding-top: 20px;
+}
+
+.playfield-container canvas {
+  border: 2px solid #1A1A2E;
+}
+
+.hud-item {
+  text-align: center;
+}
+
+.hud-label {
+  font-size: 12px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+
+.hud-value {
+  font-size: 24px;
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-item canvas {
+  display: block;
+  margin: 0 auto;
+}
+
+.timer-warning .hud-value {
+  color: #FF1744;
+  animation: pulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  from { opacity: 1; }
+  to { opacity: 0.5; }
+}
+
+/* Overlays */
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.overlay-content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.overlay-content h2 {
+  font-size: 48px;
+  margin: 0 0 20px;
+  letter-spacing: 4px;
+}
+
+.final-stats {
+  font-size: 20px;
+  margin-bottom: 20px;
+  line-height: 1.8;
+}
+
+.menu-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 12px 32px;
+  cursor: pointer;
+  letter-spacing: 2px;
+  transition: background 0.2s;
+}
+
+.menu-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.new-best {
+  color: #FFD600;
+  font-size: 24px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  animation: pulse 0.5s ease-in-out infinite alternate;
+}
+
+.mode-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 16px;
+  letter-spacing: 1px;
+}

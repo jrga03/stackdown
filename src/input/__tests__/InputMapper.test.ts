@@ -59,7 +59,7 @@ describe('InputMapper', () => {
   // 3. Unmapped key returns null
   it('returns null for unmapped key', () => {
     const mapper = new InputMapper();
-    expect(mapper.mapKey('KeyX')).toBeNull();
+    expect(mapper.mapKey('KeyQ')).toBeNull();
   });
 
   it('returns null for empty string', () => {

@@ -128,14 +128,14 @@ describe('KeyboardManager', () => {
   // 4. Unmapped keys are ignored
   it('ignores unmapped keys on keydown', () => {
     const spy = vi.spyOn(dasManager, 'onKeyDown');
-    fireKeyDown('KeyX');
+    fireKeyDown('KeyQ');
     expect(spy).not.toHaveBeenCalled();
     expect(actionCallback).not.toHaveBeenCalled();
   });
 
   it('ignores unmapped keys on keyup', () => {
     const spy = vi.spyOn(dasManager, 'onKeyUp');
-    fireKeyUp('KeyX');
+    fireKeyUp('KeyQ');
     expect(spy).not.toHaveBeenCalled();
   });
 
@@ -151,7 +151,7 @@ describe('KeyboardManager', () => {
   });
 
   it('does not call preventDefault for unmapped keys', () => {
-    const event = fireKeyDown('KeyX');
+    const event = fireKeyDown('KeyQ');
     expect(event.preventDefault).not.toHaveBeenCalled();
   });
 
