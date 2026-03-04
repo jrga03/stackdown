@@ -51,7 +51,7 @@ export class GameRenderer {
     this.textPopupManager.setCellSize(this.cellSize);
   }
 
-  draw(snapshot: GameSnapshot, interpolation: number, deltaMs: number): void {
+  draw(snapshot: GameSnapshot, _interpolation: number, deltaMs: number): void {
     const ctx = this.ctx;
     const cellSize = this.cellSize;
 
@@ -97,8 +97,8 @@ export class GameRenderer {
       const ghostY = this.calculateGhostY(snapshot);
       drawGhostPiece(ctx, snapshot.activePiece, ghostY, cellSize);
 
-      // 5. Draw active piece (with interpolation)
-      drawActivePiece(ctx, snapshot.activePiece, cellSize, interpolation);
+      // 5. Draw active piece
+      drawActivePiece(ctx, snapshot.activePiece, cellSize);
     }
 
     // 6. Draw line clear animations

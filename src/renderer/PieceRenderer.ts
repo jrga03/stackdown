@@ -14,17 +14,14 @@ const BUFFER_ROWS = BOARD_HEIGHT - VISIBLE_HEIGHT; // 20
 /**
  * Draw the active (falling) piece on the playfield.
  * Only renders blocks in the visible area (row >= BUFFER_ROWS).
- * interpolationY is an optional fractional row offset for smooth gravity.
  */
 export function drawActivePiece(
   ctx: CanvasRenderingContext2D,
   piece: ActivePieceState,
   cellSize: number,
-  interpolationY?: number,
 ): void {
   const blocks = getBlocks(piece.type, piece.rotation);
   const color = PIECE_COLORS[piece.type];
-  const yOffset = interpolationY ?? 0;
 
   for (const block of blocks) {
     const absRow = block.y + piece.position.y;
@@ -32,7 +29,7 @@ export function drawActivePiece(
     if (absRow < BUFFER_ROWS) continue;
 
     const px = (block.x + piece.position.x) * cellSize;
-    const py = (absRow - BUFFER_ROWS + yOffset) * cellSize;
+    const py = (absRow - BUFFER_ROWS) * cellSize;
     drawBlock(ctx, px, py, cellSize, color);
   }
 }
