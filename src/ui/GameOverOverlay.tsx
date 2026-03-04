@@ -1,4 +1,6 @@
+import { useMemo } from 'react';
 import { GameMode } from '../engine';
+import { useMenuNavigation, type MenuItemType } from '../hooks/useMenuNavigation';
 
 interface GameOverOverlayProps {
   score: number;
@@ -19,6 +21,16 @@ export function GameOverOverlay({
   onPlayAgain,
   onMainMenu,
 }: GameOverOverlayProps) {
+  const items: MenuItemType[] = useMemo(
+    () => [
+      { kind: 'button', onActivate: onPlayAgain },
+      { kind: 'button', onActivate: onMainMenu },
+    ],
+    [onPlayAgain, onMainMenu],
+  );
+
+  const { getItemProps } = useMenuNavigation({ items, onEscape: onMainMenu });
+
   return (
     <div className="overlay">
       <div className="overlay-content">
@@ -32,10 +44,10 @@ export function GameOverOverlay({
           <div>Level: {level}</div>
           <div>Lines: {lines}</div>
         </div>
-        <button className="menu-button" onClick={onPlayAgain}>
+        <button className={`menu-button ${getItemProps(0).className}`} onMouseEnter={getItemProps(0).onMouseEnter} onClick={getItemProps(0).onClick}>
           PLAY AGAIN
         </button>
-        <button className="menu-button" onClick={onMainMenu}>
+        <button className={`menu-button ${getItemProps(1).className}`} onMouseEnter={getItemProps(1).onMouseEnter} onClick={getItemProps(1).onClick}>
           MAIN MENU
         </button>
       </div>
