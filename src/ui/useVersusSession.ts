@@ -104,7 +104,9 @@ export function useVersusSession(
       }
     });
 
-    session.start();
+    session.start().catch(() => {
+      // Worker failed to initialize — session won't start
+    });
 
     return () => {
       session.destroy();
