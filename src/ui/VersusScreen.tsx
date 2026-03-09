@@ -87,10 +87,6 @@ export function VersusScreen({ gravityLevel, onQuit, onRematch }: VersusScreenPr
     onRematch(gravityLevel);
   }, [gravityLevel, onRematch]);
 
-  const handleQuit = useCallback(() => {
-    onQuit();
-  }, [onQuit]);
-
   return (
     <div className="game-screen">
       {/* Match timer at top */}
@@ -167,7 +163,7 @@ export function VersusScreen({ gravityLevel, onQuit, onRematch }: VersusScreenPr
       </div>
 
       {gameState.isPaused && (
-        <PauseOverlay onResume={resume} onRestart={handleRematch} onQuit={handleQuit} />
+        <PauseOverlay onResume={resume} onRestart={handleRematch} onQuit={onQuit} />
       )}
 
       {gameState.matchResult !== 'playing' && (
@@ -182,7 +178,7 @@ export function VersusScreen({ gravityLevel, onQuit, onRematch }: VersusScreenPr
           newLevel={aiLevel}
           rankLabel={rankLabel}
           onRematch={handleRematch}
-          onMainMenu={handleQuit}
+          onMainMenu={onQuit}
         />
       )}
     </div>
