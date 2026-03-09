@@ -9,35 +9,6 @@ export class GarbageManager {
   private pendingGarbage: [number, number] = [0, 0];
 
   /**
-   * Process an attack from one side.
-   * Returns the net lines to send to the opponent (after cancellation).
-   *
-   * @param attackerSide 0 or 1
-   * @param lines Number of attack lines generated
-   * @returns Lines that actually reach the opponent
-   */
-  processAttack(attackerSide: 0 | 1, lines: number): number {
-    if (lines <= 0) return 0;
-
-    // First, cancel any pending garbage against the attacker
-    const pending = this.pendingGarbage[attackerSide];
-    if (pending > 0) {
-      const cancelled = Math.min(pending, lines);
-      this.pendingGarbage[attackerSide] -= cancelled;
-      lines -= cancelled;
-    }
-
-    // Remaining lines are sent to opponent
-    if (lines > 0) {
-      const opponentSide = attackerSide === 0 ? 1 : 0;
-      this.pendingGarbage[opponentSide] += lines;
-      return lines;
-    }
-
-    return 0;
-  }
-
-  /**
    * Consume and return all pending garbage for a side,
    * resetting the counter to 0.
    */
