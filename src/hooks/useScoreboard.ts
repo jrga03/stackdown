@@ -11,6 +11,7 @@ export interface ScoreEntry {
 interface Scoreboard {
   marathon: ScoreEntry[];
   practice: ScoreEntry[];
+  versus: ScoreEntry[];
 }
 
 const SCOREBOARD_KEY = 'stackdown-scoreboard';
@@ -25,6 +26,7 @@ function loadScoreboard(): Scoreboard {
       return {
         marathon: Array.isArray(parsed.marathon) ? parsed.marathon : [],
         practice: Array.isArray(parsed.practice) ? parsed.practice : [],
+        versus: Array.isArray(parsed.versus) ? parsed.versus : [],
       };
     }
 
@@ -32,7 +34,7 @@ function loadScoreboard(): Scoreboard {
     const legacy = localStorage.getItem(LEGACY_KEY);
     if (legacy) {
       const parsed = JSON.parse(legacy) as Partial<{ marathon: number; practice: number }>;
-      const board: Scoreboard = { marathon: [], practice: [] };
+      const board: Scoreboard = { marathon: [], practice: [], versus: [] };
       if (typeof parsed.marathon === 'number' && parsed.marathon > 0) {
         board.marathon.push({ score: parsed.marathon, level: 0, lines: 0, date: '' });
       }
@@ -46,7 +48,7 @@ function loadScoreboard(): Scoreboard {
   } catch {
     // fall through
   }
-  return { marathon: [], practice: [] };
+  return { marathon: [], practice: [], versus: [] };
 }
 
 function insertSorted(entries: ScoreEntry[], entry: ScoreEntry): { list: ScoreEntry[]; rank: number | null } {
@@ -72,7 +74,7 @@ export function useScoreboard() {
     mode: GameMode,
     entry: { score: number; level: number; lines: number },
   ): { rank: number | null } => {
-    const key = mode === GameMode.MARATHON ? 'marathon' : 'practice';
+    const key = mode === GameMode.MARATHON ? 'marathon' : mode === GameMode.VERSUS ? 'versus' : 'practice';
     const full: ScoreEntry = {
       ...entry,
       date: new Date().toISOString().slice(0, 10),

@@ -10,9 +10,15 @@ import {
   Grid,
 } from './types';
 import {
+  BOARD_HEIGHT,
   SPAWN_ROW,
   LOCK_DELAY_MS,
   PRACTICE_DURATION_MS,
+  ATTACK_TABLE,
+  TSPIN_ATTACK_TABLE,
+  TSPIN_MINI_ATTACK_TABLE,
+  BACK_TO_BACK_ATTACK_BONUS,
+  COMBO_ATTACK_TABLE,
 } from './constants';
 import { Board } from './Board';
 import { getBlocks } from './Piece';
@@ -76,6 +82,12 @@ export class GameEngine {
         fixedLevel: true,
       });
       this.remainingMs = PRACTICE_DURATION_MS;
+    } else if (this.gameMode === GameMode.VERSUS) {
+      this.scoreManager = new ScoreManager({
+        startLevel,
+        fixedLevel: true,
+      });
+      this.remainingMs = null;
     } else {
       this.scoreManager = new ScoreManager({ startLevel });
       this.remainingMs = null;
@@ -216,9 +228,73 @@ export class GameEngine {
     };
   }
 
+  /**
+   * Push garbage rows onto the board from below.
+   * Used in versus mode when the opponent sends attack lines.
+   */
+  receiveGarbage(lines: number): void {
+    if (lines <= 0 || this.isGameOver) return;
+
+    this.board.pushGarbageRows(lines);
+    this.gridDirty = true;
+
+    this.eventBus.emit(GameEventType.GARBAGE_RECEIVED, { lines });
+
+    // Check if the active piece is now in an invalid position (topout)
+    if (this.activePiece) {
+      const blocks = this.getAbsoluteBlocks();
+      if (!this.board.isValidPosition(blocks)) {
+        this.triggerGameOver('topout');
+      }
+    }
+  }
+
+  /**
+   * Remove up to `count` physical garbage rows from the board.
+   * Returns the number of rows actually removed.
+   */
+  removeGarbageRows(count: number): number {
+    const removed = this.board.removeGarbageRows(count);
+    if (removed > 0) this.gridDirty = true;
+    return removed;
+  }
+
+  /** Returns true if the board contains any garbage cells. */
+  hasGarbage(): boolean {
+    return this.board.hasGarbage();
+  }
+
+  /**
+   * Reset the engine after a KO in versus mode.
+   * Clears garbage from board, resets game-over state, and spawns a new piece.
+   */
+  resetForKO(): void {
+    this.isGameOver = false;
+    this.board.removeGarbageRows(BOARD_HEIGHT);
+    this.board.clearGarbage();
+    this.gridDirty = true;
+    this.gravityTimer.reset();
+    this.lockDelay.deactivate();
+    this.activePiece = null;
+    this.holdPiece = null;
+    this.holdUsed = false;
+
+    if (!this.spawnPiece(false)) {
+      // Placed pieces block spawn — clear board as fallback
+      this.board.reset();
+      this.gridDirty = true;
+      this.spawnPiece();
+    }
+  }
+
+  /** Returns the EventBus (for VersusSession to listen for events). */
+  getEventBus(): EventBus {
+    return this.eventBus;
+  }
+
   // ── Private Methods ──
 
-  private spawnPiece(): void {
+  private spawnPiece(triggerGameOverOnFail = true): boolean {
     const type = this.randomizer.next();
     const position: Position = { x: SPAWN_X, y: SPAWN_ROW };
 
@@ -230,8 +306,10 @@ export class GameEngine {
     }));
 
     if (!this.board.isValidPosition(absoluteBlocks)) {
-      this.triggerGameOver('topout');
-      return;
+      if (triggerGameOverOnFail) {
+        this.triggerGameOver('topout');
+      }
+      return false;
     }
 
     this.activePiece = {
@@ -249,6 +327,7 @@ export class GameEngine {
     this.lockDelay.deactivate();
 
     this.eventBus.emit(GameEventType.PIECE_SPAWNED, { type });
+    return true;
   }
 
   private handleMove(dx: number, _dy: number): void {
@@ -471,6 +550,26 @@ export class GameEngine {
           count: combo,
           pointsAwarded: comboPoints,
         });
+      }
+
+      // Compute attack lines for versus mode
+      let attackLines = 0;
+      if (isTSpin) {
+        attackLines = TSPIN_ATTACK_TABLE[clearedRows.length] ?? 0;
+      } else if (isTSpinMini) {
+        attackLines = TSPIN_MINI_ATTACK_TABLE[clearedRows.length] ?? 0;
+      } else {
+        attackLines = ATTACK_TABLE[clearedRows.length] ?? 0;
+      }
+      if (this.scoreManager.getBackToBack() && (isTSpin || isTSpinMini || clearedRows.length === 4)) {
+        attackLines += BACK_TO_BACK_ATTACK_BONUS;
+      }
+      if (combo > 0) {
+        const comboIndex = Math.min(combo, COMBO_ATTACK_TABLE.length - 1);
+        attackLines += COMBO_ATTACK_TABLE[comboIndex] ?? 0;
+      }
+      if (attackLines > 0) {
+        this.eventBus.emit(GameEventType.ATTACK_SENT, { lines: attackLines });
       }
 
       // Check level up

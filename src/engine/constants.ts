@@ -58,3 +58,40 @@ export const SCORE_TABLE = {
   comboMultiplier: 50, // 50 × combo × level
   backToBackMultiplier: 1.5,
 } as const;
+
+// ── Attack Table (lines sent to opponent) ──
+
+export const ATTACK_TABLE: Record<number, number> = {
+  0: 0,
+  1: 0, // single
+  2: 1, // double
+  3: 2, // triple
+  4: 4, // quad
+};
+
+export const TSPIN_ATTACK_TABLE: Record<number, number> = {
+  0: 0,
+  1: 2, // T-Spin single
+  2: 4, // T-Spin double
+  3: 6, // T-Spin triple
+};
+
+export const TSPIN_MINI_ATTACK_TABLE: Record<number, number> = {
+  0: 0,
+  1: 0, // T-Spin mini single
+  2: 1, // T-Spin mini double
+};
+
+export const BACK_TO_BACK_ATTACK_BONUS = 1;
+
+export const COMBO_ATTACK_TABLE: readonly number[] = [
+  0, // combo 0
+  0, // combo 1
+  1, // combo 2
+  1, // combo 3
+  2, // combo 4
+  2, // combo 5
+  3, // combo 6
+  3, // combo 7
+  4, // combo 8+
+];

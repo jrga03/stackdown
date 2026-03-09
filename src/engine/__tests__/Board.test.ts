@@ -276,4 +276,29 @@ describe('Board', () => {
     const board = new Board();
     expect(board.isValidPosition([])).toBe(true);
   });
+
+  // Board.reset() clears entire board
+  it('reset() clears entire board including locked pieces and garbage', () => {
+    const board = new Board();
+
+    // Lock some pieces
+    board.lockPiece([{ x: 0, y: 39 }, { x: 1, y: 39 }], PieceType.T);
+    // Push garbage
+    board.pushGarbageRows(3);
+
+    // Verify board is dirty
+    expect(board.hasGarbage()).toBe(true);
+
+    // Reset
+    board.reset();
+
+    // Verify fully empty
+    const grid = board.getGrid();
+    for (let row = 0; row < BOARD_HEIGHT; row++) {
+      for (let col = 0; col < BOARD_WIDTH; col++) {
+        expect(grid[row]![col]).toBeNull();
+      }
+    }
+    expect(board.hasGarbage()).toBe(false);
+  });
 });

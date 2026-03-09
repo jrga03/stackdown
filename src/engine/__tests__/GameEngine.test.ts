@@ -638,6 +638,81 @@ describe('GameEngine', () => {
     expect(engine.getSnapshot().level).toBe(5);
   });
 
+  // resetForKO clears garbage but preserves placed pieces
+  it('resetForKO clears garbage, preserves placed pieces, resets hold state, and spawns new piece', () => {
+    const { engine } = createEngine({ mode: GameMode.VERSUS });
+
+    // Hard drop a piece so there's a placed piece on the board
+    engine.applyAction(GameAction.HARD_DROP);
+    const snapAfterDrop = engine.getSnapshot();
+    // Verify placed piece exists on the grid (bottom rows)
+    let hasPlacedPiece = false;
+    for (let row = BOARD_HEIGHT - 2; row < BOARD_HEIGHT; row++) {
+      for (let col = 0; col < BOARD_WIDTH; col++) {
+        if (snapAfterDrop.grid[row]![col] !== null) {
+          hasPlacedPiece = true;
+        }
+      }
+    }
+    expect(hasPlacedPiece).toBe(true);
+
+    // Hold a piece so holdPiece is set
+    engine.applyAction(GameAction.HOLD);
+    expect(engine.getSnapshot().holdPiece).not.toBeNull();
+
+    // Push garbage to force topout
+    engine.receiveGarbage(22);
+    expect(engine.getSnapshot().isGameOver).toBe(true);
+    expect(engine.hasGarbage()).toBe(true);
+
+    // Reset for KO
+    engine.resetForKO();
+    const snap = engine.getSnapshot();
+    expect(snap.isGameOver).toBe(false);
+    expect(engine.hasGarbage()).toBe(false);
+    expect(snap.activePiece).not.toBeNull();
+    expect(snap.holdPiece).toBeNull();
+    expect(snap.holdUsed).toBe(false);
+
+    // Placed pieces should still be on the grid (preserved, not cleared)
+    let hasPreservedPiece = false;
+    for (let row = 0; row < BOARD_HEIGHT; row++) {
+      for (let col = 0; col < BOARD_WIDTH; col++) {
+        if (snap.grid[row]![col] !== null) {
+          hasPreservedPiece = true;
+        }
+      }
+    }
+    expect(hasPreservedPiece).toBe(true);
+  });
+
+  // resetForKO falls back to board.reset() when placed pieces block spawn
+  it('resetForKO falls back to board.reset() when placed pieces block spawn', () => {
+    const { engine } = createEngine({ mode: GameMode.VERSUS });
+
+    // Stack pieces near the top by hard-dropping many times until topout
+    for (let i = 0; i < 200; i++) {
+      engine.applyAction(GameAction.HARD_DROP);
+      if (engine.getSnapshot().isGameOver) break;
+    }
+    expect(engine.getSnapshot().isGameOver).toBe(true);
+
+    // resetForKO should succeed — falls back to board.reset() since
+    // placed pieces block the spawn row
+    engine.resetForKO();
+    const snap = engine.getSnapshot();
+    expect(snap.isGameOver).toBe(false);
+    expect(snap.activePiece).not.toBeNull();
+
+    // Board should be completely empty after fallback to board.reset()
+    const grid = snap.grid;
+    for (let row = 0; row < BOARD_HEIGHT; row++) {
+      for (let col = 0; col < BOARD_WIDTH; col++) {
+        expect(grid[row]![col]).toBeNull();
+      }
+    }
+  });
+
   // Multiple gravity drops at high level
   it('gravity drops multiple cells at higher levels', () => {
     const { engine } = createEngine({ startLevel: 10 });

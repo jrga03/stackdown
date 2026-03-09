@@ -28,6 +28,11 @@ export {
   GRAVITY_TABLE,
   LINES_PER_LEVEL,
   SCORE_TABLE,
+  ATTACK_TABLE,
+  TSPIN_ATTACK_TABLE,
+  TSPIN_MINI_ATTACK_TABLE,
+  BACK_TO_BACK_ATTACK_BONUS,
+  COMBO_ATTACK_TABLE,
 } from './constants';
 
 // Classes
@@ -42,3 +47,4 @@ export { LockDelay } from './LockDelay';
 export { ScoreManager } from './ScoreManager';
 export { ComboTracker } from './ComboTracker';
 export { detectTSpin } from './TSpinDetector';
+export { GarbageManager } from './GarbageManager';

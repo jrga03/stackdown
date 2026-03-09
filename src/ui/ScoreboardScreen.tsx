@@ -8,8 +8,8 @@ interface ScoreboardScreenProps {
   onBack: () => void;
 }
 
-const MODES = [GameMode.MARATHON, GameMode.PRACTICE];
-const MODE_LABELS = ['MARATHON', 'PRACTICE'];
+const MODES = [GameMode.MARATHON, GameMode.PRACTICE, GameMode.VERSUS];
+const MODE_LABELS = ['MARATHON', 'PRACTICE', 'VERSUS'];
 
 export function ScoreboardScreen({ onBack }: ScoreboardScreenProps) {
   const { scoreboard } = useScoreboard();
@@ -32,7 +32,7 @@ export function ScoreboardScreen({ onBack }: ScoreboardScreenProps) {
 
   const { getItemProps } = useMenuNavigation({ items, onEscape: onBack });
 
-  const key = mode === GameMode.MARATHON ? 'marathon' : 'practice';
+  const key = mode === GameMode.MARATHON ? 'marathon' : mode === GameMode.VERSUS ? 'versus' : 'practice';
   const entries = scoreboard[key];
 
   return (

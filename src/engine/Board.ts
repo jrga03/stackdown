@@ -29,6 +29,11 @@ export class Board {
     return this.grid[row]![col]!;
   }
 
+  /** Resets the board to a completely empty grid. */
+  reset(): void {
+    this.grid = Board.createEmptyGrid();
+  }
+
   /** Returns the full 40x10 grid. */
   getGrid(): Grid {
     return this.grid;
@@ -72,9 +77,9 @@ export class Board {
   clearFullRows(): number[] {
     const clearedIndices: number[] = [];
 
-    // Find full rows (bottom to top for correct ordering)
+    // Find clearable rows (bottom to top for correct ordering)
     for (let row = BOARD_HEIGHT - 1; row >= 0; row--) {
-      if (this.isRowFull(row)) {
+      if (this.isRowClearable(row)) {
         clearedIndices.push(row);
       }
     }
@@ -96,11 +101,102 @@ export class Board {
     return clearedIndices.sort((a, b) => a - b);
   }
 
-  private isRowFull(row: number): boolean {
+  /**
+   * Pushes n garbage rows onto the bottom of the board.
+   * Existing rows shift up by n. Top n rows are discarded.
+   * Garbage rows are solid (no gap) — intentional for versus mode.
+   */
+  pushGarbageRows(count: number): void {
+    if (count <= 0) return;
+    // Cap to grid height to prevent corruption if count exceeds board size
+    const capped = Math.min(count, BOARD_HEIGHT);
+
+    // Remove top rows (they get pushed off)
+    this.grid.splice(0, capped);
+
+    // Add garbage rows at the bottom
+    for (let i = 0; i < capped; i++) {
+      const row: Cell[] = [];
+      for (let col = 0; col < BOARD_WIDTH; col++) {
+        row.push('GARBAGE');
+      }
+      this.grid.push(row);
+    }
+  }
+
+  /**
+   * Remove up to `count` garbage rows from the bottom of the board.
+   * Shifts remaining content down and inserts empty rows at top.
+   * A garbage row = every cell is 'GARBAGE'.
+   * Returns the number of rows actually removed.
+   */
+  removeGarbageRows(count: number): number {
+    if (count <= 0) return 0;
+
+    // Find garbage rows from bottom up
+    const garbageIndices: number[] = [];
+    for (let row = BOARD_HEIGHT - 1; row >= 0 && garbageIndices.length < count; row--) {
+      if (this.isGarbageRow(row)) {
+        garbageIndices.push(row);
+      }
+    }
+
+    if (garbageIndices.length === 0) return 0;
+
+    // Remove in descending order (safe for splice)
+    for (const rowIndex of garbageIndices) {
+      this.grid.splice(rowIndex, 1);
+    }
+
+    // Insert empty rows at top
+    for (let i = 0; i < garbageIndices.length; i++) {
+      this.grid.unshift(Board.createEmptyRow());
+    }
+
+    return garbageIndices.length;
+  }
+
+  /** Returns true if every cell in the row is 'GARBAGE'. */
+  private isGarbageRow(row: number): boolean {
     const gridRow = this.grid[row]!;
     for (let col = 0; col < BOARD_WIDTH; col++) {
-      if (gridRow[col] === null) return false;
+      if (gridRow[col] !== 'GARBAGE') return false;
     }
     return true;
+  }
+
+  /** Returns true if the grid contains any GARBAGE cell. */
+  hasGarbage(): boolean {
+    for (let row = 0; row < BOARD_HEIGHT; row++) {
+      for (let col = 0; col < BOARD_WIDTH; col++) {
+        if (this.grid[row]![col] === 'GARBAGE') return true;
+      }
+    }
+    return false;
+  }
+
+  /** Replaces all GARBAGE cells with null. */
+  clearGarbage(): void {
+    for (let row = 0; row < BOARD_HEIGHT; row++) {
+      for (let col = 0; col < BOARD_WIDTH; col++) {
+        if (this.grid[row]![col] === 'GARBAGE') {
+          this.grid[row]![col] = null;
+        }
+      }
+    }
+  }
+
+  /**
+   * A row is clearable only if it is full AND contains at least one
+   * non-GARBAGE cell. Pure garbage rows are never auto-cleared.
+   */
+  private isRowClearable(row: number): boolean {
+    const gridRow = this.grid[row]!;
+    let hasNonGarbage = false;
+    for (let col = 0; col < BOARD_WIDTH; col++) {
+      if (gridRow[col] === null) return false;
+      if (gridRow[col] !== 'GARBAGE') hasNonGarbage = true;
+    }
+    return hasNonGarbage;
   }
 }

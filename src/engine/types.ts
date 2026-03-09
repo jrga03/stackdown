@@ -32,6 +32,7 @@ export enum GameAction {
 export enum GameMode {
   MARATHON = 'marathon',
   PRACTICE = 'practice',
+  VERSUS = 'versus',
 }
 
 export enum GameEventType {
@@ -49,11 +50,13 @@ export enum GameEventType {
   GAME_OVER = 'game_over',
   HARD_DROP_IMPACT = 'hard_drop_impact',
   TIME_WARNING = 'time_warning',
+  GARBAGE_RECEIVED = 'garbage_received',
+  ATTACK_SENT = 'attack_sent',
 }
 
 // ── Core Types ──
 
-export type Cell = PieceType | null;
+export type Cell = PieceType | 'GARBAGE' | null;
 export type Grid = Cell[][]; // grid[row][col], row 0 = top
 
 export interface Position {
@@ -136,4 +139,6 @@ export type EventMap = {
     distance: number;
   };
   [GameEventType.TIME_WARNING]: { remainingMs: number };
+  [GameEventType.GARBAGE_RECEIVED]: { lines: number };
+  [GameEventType.ATTACK_SENT]: { lines: number };
 };

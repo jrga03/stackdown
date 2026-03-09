@@ -97,7 +97,8 @@ export class GameRenderer {
         if (cell !== null && cell !== undefined) {
           const px = col * cellSize;
           const py = screenRow * cellSize;
-          drawCachedBlock(ctx, this.blockCache, px, py, cell);
+          const blockKey = cell === 'GARBAGE' ? 'garbage' as const : cell;
+          drawCachedBlock(ctx, this.blockCache, px, py, blockKey);
         }
       }
     }

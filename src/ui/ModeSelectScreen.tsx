@@ -5,13 +5,14 @@ import './MainMenu.css';
 
 interface ModeSelectProps {
   onStart: (config: GameConfig) => void;
+  onVersus: () => void;
   onBack: () => void;
 }
 
 const MODES = [GameMode.MARATHON, GameMode.PRACTICE];
 const MODE_LABELS = ['MARATHON', 'PRACTICE'];
 
-export function ModeSelectScreen({ onStart, onBack }: ModeSelectProps) {
+export function ModeSelectScreen({ onStart, onVersus, onBack }: ModeSelectProps) {
   const [mode, setMode] = useState<GameMode>(GameMode.MARATHON);
   const [startLevel, setStartLevel] = useState(1);
 
@@ -45,17 +46,19 @@ export function ModeSelectScreen({ onStart, onBack }: ModeSelectProps) {
             startLevel: mode === GameMode.PRACTICE ? startLevel : 1,
           }),
       },
+      { kind: 'button', onActivate: onVersus },
       { kind: 'button', onActivate: onBack },
     );
     return list;
-  }, [mode, startLevel, onStart, onBack]);
+  }, [mode, startLevel, onStart, onVersus, onBack]);
 
   const { getItemProps } = useMenuNavigation({ items, onEscape: onBack });
 
   // Compute item indices for the buttons after the conditional slider
   const sliderIndex = mode === GameMode.PRACTICE ? 1 : -1;
   const startIndex = mode === GameMode.PRACTICE ? 2 : 1;
-  const backIndex = mode === GameMode.PRACTICE ? 3 : 2;
+  const versusIndex = mode === GameMode.PRACTICE ? 3 : 2;
+  const backIndex = mode === GameMode.PRACTICE ? 4 : 3;
 
   return (
     <div className="main-menu">
@@ -127,6 +130,13 @@ export function ModeSelectScreen({ onStart, onBack }: ModeSelectProps) {
           onClick={getItemProps(startIndex).onClick}
         >
           START
+        </button>
+        <button
+          className={`menu-button ${getItemProps(versusIndex).className}`}
+          onMouseEnter={getItemProps(versusIndex).onMouseEnter}
+          onClick={getItemProps(versusIndex).onClick}
+        >
+          VERSUS AI
         </button>
         <button
           className={`menu-button ${getItemProps(backIndex).className}`}
