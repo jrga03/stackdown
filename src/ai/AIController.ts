@@ -194,6 +194,7 @@ export class AIController {
   }
 
   destroy(): void {
+    this.worker?.terminate?.();
     this.worker = null;
   }
 
