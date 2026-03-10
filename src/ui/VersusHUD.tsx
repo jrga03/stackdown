@@ -6,7 +6,6 @@ interface VersusHUDLeftProps {
   score: number;
   lines: number;
   holdPiece: PieceType | null;
-  pendingGarbage: number;
   kos: number;
 }
 
@@ -15,7 +14,6 @@ export function VersusHUDLeft({
   score,
   lines,
   holdPiece,
-  pendingGarbage,
   kos,
 }: VersusHUDLeftProps) {
   return (
@@ -32,14 +30,6 @@ export function VersusHUDLeft({
           {kos}
         </div>
       </div>
-      {pendingGarbage > 0 && (
-        <div className="hud-item">
-          <div className="hud-label">INCOMING</div>
-          <div className="hud-value" style={{ color: '#FF1744' }}>
-            {pendingGarbage}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

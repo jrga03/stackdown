@@ -16,6 +16,8 @@ import { TextPopupManager } from './TextPopup';
 
 const BUFFER_ROWS = BOARD_HEIGHT - VISIBLE_HEIGHT; // 20
 
+export const GARBAGE_BAR_WIDTH = 6;
+
 export class GameRenderer {
   private ctx: CanvasRenderingContext2D;
   private boardRenderer: BoardRenderer;
@@ -25,6 +27,10 @@ export class GameRenderer {
   private cellSize = 0;
   private boardPixelWidth = 0;
   private boardPixelHeight = 0;
+
+  // Garbage bar animation (rows, fractional)
+  private displayedBarRows = 0;
+  private static readonly BAR_LERP_SPEED = 8; // rows per second
 
   // Ghost Y memoization
   private lastGhostY = 0;
@@ -62,7 +68,7 @@ export class GameRenderer {
     this.textPopupManager.setCellSize(this.cellSize);
   }
 
-  draw(snapshot: GameSnapshot, _interpolation: number, deltaMs: number): void {
+  draw(snapshot: GameSnapshot, _interpolation: number, deltaMs: number, pendingGarbage?: number): void {
     const ctx = this.ctx;
     const cellSize = this.cellSize;
 
@@ -72,9 +78,39 @@ export class GameRenderer {
     this.animationManager.update(deltaMs);
     this.textPopupManager.update(deltaMs);
 
+    const hasBar = pendingGarbage !== undefined;
+
     // 1. Clear canvas
     ctx.fillStyle = BOARD_COLORS.background;
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+    // Animate garbage bar toward target (versus mode only)
+    if (hasBar) {
+      const targetRows = Math.min(pendingGarbage, VISIBLE_HEIGHT);
+      const maxDelta = GameRenderer.BAR_LERP_SPEED * (deltaMs / 1000);
+      const diff = targetRows - this.displayedBarRows;
+      if (Math.abs(diff) <= maxDelta) {
+        this.displayedBarRows = targetRows;
+      } else {
+        this.displayedBarRows += Math.sign(diff) * maxDelta;
+      }
+
+      if (this.displayedBarRows > 0) {
+        const barHeight = this.displayedBarRows * cellSize;
+        const barTop = this.boardPixelHeight - barHeight;
+        const grad = ctx.createLinearGradient(0, this.boardPixelHeight, 0, barTop);
+        grad.addColorStop(0, 'rgba(255, 60, 60, 0.3)');
+        grad.addColorStop(1, 'rgba(255, 100, 50, 0.6)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, barTop, GARBAGE_BAR_WIDTH, barHeight);
+      }
+    }
+
+    // Shift all board drawing rightward when bar area is present
+    if (hasBar) {
+      ctx.save();
+      ctx.translate(GARBAGE_BAR_WIDTH, 0);
+    }
 
     // 2. Draw cached grid
     this.boardRenderer.drawCachedGrid(ctx);
@@ -117,6 +153,8 @@ export class GameRenderer {
 
     // 7. Draw text popups
     this.textPopupManager.draw(ctx);
+
+    if (hasBar) ctx.restore();
   }
 
   /** Return memoized ghost Y; recalculate only when piece state or grid changes. */

@@ -1,5 +1,6 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
 import { GameMode, type GameSnapshot } from '../engine';
+import { GARBAGE_BAR_WIDTH } from '../renderer';
 import { useVersusSession } from './useVersusSession';
 import { useScoreboard } from '../hooks/useScoreboard';
 import { type PlayerXP, type XPGainResult } from '../hooks/usePlayerXP';
@@ -69,12 +70,12 @@ export function VersusScreen({ gravityLevel, playerXP, onQuit, onRematch }: Vers
       const height = cellSize * 20;
 
       if (playerCanvasRef.current) {
-        playerCanvasRef.current.width = width;
+        playerCanvasRef.current.width = width + GARBAGE_BAR_WIDTH;
         playerCanvasRef.current.height = height;
         resizePlayer(width, height);
       }
       if (aiCanvasRef.current) {
-        aiCanvasRef.current.width = width;
+        aiCanvasRef.current.width = width + GARBAGE_BAR_WIDTH;
         aiCanvasRef.current.height = height;
         resizeAI(width, height);
       }
@@ -118,7 +119,6 @@ export function VersusScreen({ gravityLevel, playerXP, onQuit, onRematch }: Vers
             score={gameState.playerScore}
             lines={gameState.playerLines}
             holdPiece={gameState.playerHoldPiece}
-            pendingGarbage={gameState.playerPendingGarbage}
             kos={gameState.playerKOs}
           />
         </div>
@@ -151,7 +151,6 @@ export function VersusScreen({ gravityLevel, playerXP, onQuit, onRematch }: Vers
             score={gameState.aiScore}
             lines={gameState.aiLines}
             holdPiece={gameState.aiHoldPiece}
-            pendingGarbage={gameState.aiPendingGarbage}
             kos={gameState.aiKOs}
           />
         </div>

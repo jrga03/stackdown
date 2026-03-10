@@ -1,4 +1,4 @@
-export { GameRenderer } from './GameRenderer';
+export { GameRenderer, GARBAGE_BAR_WIDTH } from './GameRenderer';
 export { PIECE_COLORS, BOARD_COLORS, TEXT_POPUP_COLORS } from './colors';
 export { drawBlock, BlockTemplateCache, drawCachedBlock } from './BlockRenderer';
 export { drawPiecePreview, drawActivePiece, drawGhostPiece } from './PieceRenderer';

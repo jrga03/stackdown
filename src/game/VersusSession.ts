@@ -215,9 +215,11 @@ export class VersusSession {
       (interpolation: number, deltaMs: number) => {
         this.playerRenderer.draw(
           this.playerEngine.getSnapshot(), interpolation, deltaMs,
+          this.garbageManager.getPending(0),
         );
         this.aiRenderer.draw(
           this.aiEngine.getSnapshot(), interpolation, deltaMs,
+          this.garbageManager.getPending(1),
         );
       },
     );
