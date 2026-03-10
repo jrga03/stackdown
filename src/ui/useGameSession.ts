@@ -83,5 +83,5 @@ export function useGameSession(
     [],
   );
 
-  return { gameState, pause, resume, restart, resize };
+  return { gameState, sessionRef, pause, resume, restart, resize };
 }

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useMenuNavigation, type MenuItemType } from '../hooks/useMenuNavigation';
 import { type MatchEndReason } from '../game/VersusSession';
 import { type XPGainResult, getRankLabel } from '../hooks/usePlayerXP';
+import { formatGameTime, type GameStats } from '../stats';
 
 interface VersusGameOverOverlayProps {
   result: 'win' | 'lose';
@@ -11,6 +12,7 @@ interface VersusGameOverOverlayProps {
   aiKOs: number;
   matchEndReason: MatchEndReason | null;
   xpResult: XPGainResult | null;
+  gameStats: GameStats | null;
   onRematch: () => void;
   onMainMenu: () => void;
 }
@@ -29,6 +31,7 @@ export function VersusGameOverOverlay({
   aiKOs,
   matchEndReason,
   xpResult,
+  gameStats,
   onRematch,
   onMainMenu,
 }: VersusGameOverOverlayProps) {
@@ -73,6 +76,28 @@ export function VersusGameOverOverlay({
               {xpResult.xpRequiredForLevel > 0 && (
                 <> ({xpResult.newXPInLevel.toLocaleString()} / {xpResult.xpRequiredForLevel.toLocaleString()} XP)</>
               )}
+            </div>
+          </div>
+        )}
+        {gameStats && (
+          <div className="game-stats-breakdown">
+            <div className="stats-row">
+              <span>Pieces</span><span>{gameStats.piecesPlaced}</span>
+            </div>
+            <div className="stats-row">
+              <span>Lines Sent</span><span>{gameStats.attackLinesSent}</span>
+            </div>
+            <div className="stats-row">
+              <span>Garbage Recv</span><span>{gameStats.garbageReceived}</span>
+            </div>
+            {gameStats.quads > 0 && <div className="stats-row"><span>Tetrises</span><span>{gameStats.quads}</span></div>}
+            {(gameStats.tSpinSingles + gameStats.tSpinDoubles + gameStats.tSpinTriples + gameStats.tSpinZeros) > 0 && (
+              <div className="stats-row"><span>T-Spins</span><span>{gameStats.tSpinZeros + gameStats.tSpinSingles + gameStats.tSpinDoubles + gameStats.tSpinTriples}</span></div>
+            )}
+            {gameStats.maxCombo > 0 && <div className="stats-row"><span>Max Combo</span><span>{gameStats.maxCombo}</span></div>}
+            {gameStats.backToBacks > 0 && <div className="stats-row"><span>Back-to-Back</span><span>{gameStats.backToBacks}</span></div>}
+            <div className="stats-row">
+              <span>Time</span><span>{formatGameTime(gameStats.elapsedMs)}</span>
             </div>
           </div>
         )}

@@ -4,6 +4,7 @@ import { GARBAGE_BAR_WIDTH } from '../renderer';
 import { useVersusSession } from './useVersusSession';
 import { useScoreboard } from '../hooks/useScoreboard';
 import { type PlayerXP, type XPGainResult } from '../hooks/usePlayerXP';
+import { StatsTracker, type GameStats } from '../stats';
 import { VersusHUDLeft, VersusHUDRight } from './VersusHUD';
 import { HUD } from './HUD';
 import { PauseOverlay } from './PauseOverlay';
@@ -15,9 +16,14 @@ interface VersusScreenProps {
   playerXP: PlayerXP;
   onQuit: () => void;
   onRematch: (gravityLevel: number) => void;
+  recordGame: (
+    gameStats: GameStats,
+    mode: GameMode,
+    versusResult?: 'win' | 'lose',
+  ) => void;
 }
 
-export function VersusScreen({ gravityLevel, playerXP, onQuit, onRematch }: VersusScreenProps) {
+export function VersusScreen({ gravityLevel, playerXP, onQuit, onRematch, recordGame }: VersusScreenProps) {
   const playerCanvasRef = useRef<HTMLCanvasElement>(null);
   const aiCanvasRef = useRef<HTMLCanvasElement>(null);
   const { addXP } = playerXP;
@@ -28,9 +34,14 @@ export function VersusScreen({ gravityLevel, playerXP, onQuit, onRematch }: Vers
   });
   const { addScore } = useScoreboard();
   const [xpResult, setXpResult] = useState<XPGainResult | null>(null);
+  const [lastGameStats, setLastGameStats] = useState<GameStats | null>(null);
+  const trackerRef = useRef<StatsTracker | null>(null);
+  const statsRecordedRef = useRef(false);
+  const matchResultRef = useRef<'win' | 'lose' | null>(null);
 
   const handleMatchEnd = useCallback(
-    (_result: 'win' | 'lose', playerSnap: GameSnapshot) => {
+    (result: 'win' | 'lose', playerSnap: GameSnapshot) => {
+      matchResultRef.current = result;
       setXpResult(addXP(playerSnap.score));
       addScore(GameMode.VERSUS, {
         score: playerSnap.score,
@@ -41,13 +52,52 @@ export function VersusScreen({ gravityLevel, playerXP, onQuit, onRematch }: Vers
     [addXP, addScore, gravityLevel],
   );
 
-  const { gameState, resume, resizePlayer, resizeAI } = useVersusSession(
+  const { gameState, sessionRef, resume, resizePlayer, resizeAI } = useVersusSession(
     playerCanvasRef,
     aiCanvasRef,
     aiLevel,
     gravityLevel,
     handleMatchEnd,
   );
+
+  // Create StatsTracker when session is ready
+  useEffect(() => {
+    const session = sessionRef.current;
+    if (!session) return;
+    trackerRef.current = new StatsTracker(session.getPlayerEventBus());
+    statsRecordedRef.current = false;
+    matchResultRef.current = null;
+    return () => {
+      trackerRef.current?.destroy();
+      trackerRef.current = null;
+    };
+  }, [sessionRef.current]);
+
+  // Record stats when match ends
+  useEffect(() => {
+    if (
+      gameState.matchResult !== 'playing' &&
+      trackerRef.current &&
+      sessionRef.current &&
+      !statsRecordedRef.current
+    ) {
+      statsRecordedRef.current = true;
+      const snap = sessionRef.current.getSnapshot();
+      const stats = trackerRef.current.getGameStats(snap.player, true);
+      setLastGameStats(stats);
+      recordGame(stats, GameMode.VERSUS, matchResultRef.current ?? undefined);
+    }
+  }, [gameState.matchResult]);
+
+  const handleQuit = useCallback(() => {
+    if (trackerRef.current && sessionRef.current && !statsRecordedRef.current) {
+      statsRecordedRef.current = true;
+      const snap = sessionRef.current.getSnapshot();
+      const stats = trackerRef.current.getGameStats(snap.player, false);
+      recordGame(stats, GameMode.VERSUS);
+    }
+    onQuit();
+  }, [onQuit, recordGame]);
 
   // Responsive canvas sizing
   useEffect(() => {
@@ -163,7 +213,7 @@ export function VersusScreen({ gravityLevel, playerXP, onQuit, onRematch }: Vers
       </div>
 
       {gameState.isPaused && (
-        <PauseOverlay onResume={resume} onRestart={handleRematch} onQuit={onQuit} />
+        <PauseOverlay onResume={resume} onRestart={handleRematch} onQuit={handleQuit} />
       )}
 
       {gameState.matchResult !== 'playing' && (
@@ -175,6 +225,7 @@ export function VersusScreen({ gravityLevel, playerXP, onQuit, onRematch }: Vers
           aiKOs={gameState.aiKOs}
           matchEndReason={gameState.matchEndReason}
           xpResult={xpResult}
+          gameStats={lastGameStats}
           onRematch={handleRematch}
           onMainMenu={onQuit}
         />

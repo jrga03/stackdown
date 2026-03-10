@@ -194,6 +194,13 @@ export class GameSession {
   }
 
   /**
+   * Returns the EventBus for external stat tracking.
+   */
+  getEventBus(): EventBus {
+    return this.eventBus;
+  }
+
+  /**
    * Updates the renderer for new canvas dimensions.
    */
   resize(width: number, height: number): void {

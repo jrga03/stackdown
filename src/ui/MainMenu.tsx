@@ -5,19 +5,21 @@ import './MainMenu.css';
 interface MainMenuProps {
   onPlay: () => void;
   onScores: () => void;
+  onStats: () => void;
   onSettings: () => void;
   playerLevel: number;
   rankLabel: string;
 }
 
-export function MainMenu({ onPlay, onScores, onSettings, playerLevel, rankLabel }: MainMenuProps) {
+export function MainMenu({ onPlay, onScores, onStats, onSettings, playerLevel, rankLabel }: MainMenuProps) {
   const items: MenuItemType[] = useMemo(
     () => [
       { kind: 'button', onActivate: onPlay },
       { kind: 'button', onActivate: onScores },
+      { kind: 'button', onActivate: onStats },
       { kind: 'button', onActivate: onSettings },
     ],
-    [onPlay, onScores, onSettings],
+    [onPlay, onScores, onStats, onSettings],
   );
 
   const { getItemProps } = useMenuNavigation({ items });
@@ -34,6 +36,9 @@ export function MainMenu({ onPlay, onScores, onSettings, playerLevel, rankLabel 
           SCORES
         </button>
         <button className={`menu-button ${getItemProps(2).className}`} onMouseEnter={getItemProps(2).onMouseEnter} onClick={getItemProps(2).onClick}>
+          STATS
+        </button>
+        <button className={`menu-button ${getItemProps(3).className}`} onMouseEnter={getItemProps(3).onMouseEnter} onClick={getItemProps(3).onClick}>
           SETTINGS
         </button>
       </div>

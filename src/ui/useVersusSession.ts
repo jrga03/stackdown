@@ -124,5 +124,5 @@ export function useVersusSession(
     [],
   );
 
-  return { gameState, resume, resizePlayer, resizeAI };
+  return { gameState, sessionRef, resume, resizePlayer, resizeAI };
 }

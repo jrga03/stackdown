@@ -303,6 +303,10 @@ export class VersusSession {
     callback(this.getSnapshot());
   }
 
+  getPlayerEventBus(): EventBus {
+    return this.playerEventBus;
+  }
+
   getSnapshot(): VersusSnapshot {
     return {
       player: this.playerEngine.getSnapshot(),

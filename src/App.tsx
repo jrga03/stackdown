@@ -5,13 +5,15 @@ import { GameConfigScreen } from './ui/GameConfigScreen';
 import { GameScreen } from './ui/GameScreen';
 import { SettingsScreen } from './ui/SettingsScreen';
 import { ScoreboardScreen } from './ui/ScoreboardScreen';
+import { StatsScreen } from './ui/StatsScreen';
 import { VersusPreMatchScreen } from './ui/VersusPreMatchScreen';
 import { VersusScreen } from './ui/VersusScreen';
 import { MenuBackground } from './ui/MenuBackground';
 import { usePlayerXP } from './hooks/usePlayerXP';
+import { usePlayerStats } from './hooks/usePlayerStats';
 import { GameMode, type GameConfig } from './engine';
 
-type Screen = 'menu' | 'mode-select' | 'marathon-config' | 'practice-config' | 'game' | 'settings' | 'scoreboard' | 'versus-prematch' | 'versus';
+type Screen = 'menu' | 'mode-select' | 'marathon-config' | 'practice-config' | 'game' | 'settings' | 'scoreboard' | 'stats' | 'versus-prematch' | 'versus';
 
 export function App() {
   const [screen, setScreen] = useState<Screen>('menu');
@@ -22,6 +24,7 @@ export function App() {
   const [versusGravity, setVersusGravity] = useState(1);
   const [versusKey, setVersusKey] = useState(0);
   const playerXP = usePlayerXP();
+  const playerStats = usePlayerStats();
 
   const handleStartGame = (config: GameConfig) => {
     setGameConfig(config);
@@ -43,6 +46,7 @@ export function App() {
         <MainMenu
           onPlay={() => setScreen('mode-select')}
           onScores={() => setScreen('scoreboard')}
+          onStats={() => setScreen('stats')}
           onSettings={() => setScreen('settings')}
           playerLevel={playerXP.level}
           rankLabel={playerXP.rankLabel}
@@ -80,11 +84,18 @@ export function App() {
           onBack={() => setScreen('menu')}
         />
       )}
+      {screen === 'stats' && (
+        <StatsScreen
+          stats={playerStats.stats}
+          onBack={() => setScreen('menu')}
+        />
+      )}
       {screen === 'game' && (
         <GameScreen
           gameConfig={gameConfig}
           onQuit={() => setScreen('menu')}
           addXP={playerXP.addXP}
+          recordGame={playerStats.recordGame}
         />
       )}
       {screen === 'versus-prematch' && (
@@ -102,6 +113,7 @@ export function App() {
           playerXP={playerXP}
           onQuit={() => setScreen('menu')}
           onRematch={handleStartVersus}
+          recordGame={playerStats.recordGame}
         />
       )}
     </>

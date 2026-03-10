@@ -6,25 +6,46 @@ import { GameOverOverlay } from './GameOverOverlay';
 import { useScoreboard } from '../hooks/useScoreboard';
 import { type GameConfig, GameMode } from '../engine';
 import { type XPGainResult } from '../hooks/usePlayerXP';
+import { StatsTracker, type GameStats } from '../stats';
 import './GameScreen.css';
 
 interface GameScreenProps {
   gameConfig: GameConfig;
   onQuit: () => void;
   addXP: (xp: number) => XPGainResult;
+  recordGame: (
+    gameStats: GameStats,
+    mode: GameMode,
+    versusResult?: 'win' | 'lose',
+  ) => void;
 }
 
-export function GameScreen({ gameConfig, onQuit, addXP }: GameScreenProps) {
+export function GameScreen({ gameConfig, onQuit, addXP, recordGame }: GameScreenProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { gameState, resume, restart, resize } = useGameSession(
+  const { gameState, sessionRef, resume, restart, resize } = useGameSession(
     canvasRef,
     gameConfig,
   );
   const { scoreboard, addScore } = useScoreboard();
   const [currentRank, setCurrentRank] = useState<number | null>(null);
   const [xpResult, setXpResult] = useState<XPGainResult | null>(null);
+  const [lastGameStats, setLastGameStats] = useState<GameStats | null>(null);
+  const trackerRef = useRef<StatsTracker | null>(null);
+  const statsRecordedRef = useRef(false);
 
-  // Record score and XP when game ends
+  // Create StatsTracker when session is ready
+  useEffect(() => {
+    const session = sessionRef.current;
+    if (!session) return;
+    trackerRef.current = new StatsTracker(session.getEventBus());
+    statsRecordedRef.current = false;
+    return () => {
+      trackerRef.current?.destroy();
+      trackerRef.current = null;
+    };
+  }, [sessionRef.current]);
+
+  // Record score, XP, and stats when game ends
   useEffect(() => {
     if (gameState.isGameOver) {
       const { rank } = addScore(gameState.gameMode, {
@@ -34,6 +55,16 @@ export function GameScreen({ gameConfig, onQuit, addXP }: GameScreenProps) {
       });
       setCurrentRank(rank);
       setXpResult(addXP(gameState.score));
+
+      if (trackerRef.current && sessionRef.current && !statsRecordedRef.current) {
+        statsRecordedRef.current = true;
+        const stats = trackerRef.current.getGameStats(
+          sessionRef.current.getSnapshot(),
+          true,
+        );
+        setLastGameStats(stats);
+        recordGame(stats, gameConfig.mode);
+      }
     }
   }, [gameState.isGameOver]);
 
@@ -42,11 +73,40 @@ export function GameScreen({ gameConfig, onQuit, addXP }: GameScreenProps) {
     return scoreboard[key];
   }, [scoreboard, gameState.gameMode]);
 
+  // Record abandoned game stats on quit
+  const handleQuit = () => {
+    if (trackerRef.current && sessionRef.current && !statsRecordedRef.current) {
+      statsRecordedRef.current = true;
+      const stats = trackerRef.current.getGameStats(
+        sessionRef.current.getSnapshot(),
+        false,
+      );
+      recordGame(stats, gameConfig.mode);
+    }
+    onQuit();
+  };
+
   // Reset rank on restart
   const handleRestart = () => {
     setCurrentRank(null);
     setXpResult(null);
+    setLastGameStats(null);
+    // Record abandoned stats if game wasn't completed before restart
+    if (trackerRef.current && sessionRef.current && !statsRecordedRef.current) {
+      const stats = trackerRef.current.getGameStats(
+        sessionRef.current.getSnapshot(),
+        false,
+      );
+      recordGame(stats, gameConfig.mode);
+    }
+    // Destroy old tracker before restart (restart creates a new EventBus)
+    trackerRef.current?.destroy();
+    statsRecordedRef.current = false;
     restart();
+    // Recreate tracker with the new EventBus
+    if (sessionRef.current) {
+      trackerRef.current = new StatsTracker(sessionRef.current.getEventBus());
+    }
   };
 
   // Responsive canvas sizing
@@ -89,7 +149,7 @@ export function GameScreen({ gameConfig, onQuit, addXP }: GameScreenProps) {
         </div>
       </div>
       {gameState.isPaused && (
-        <PauseOverlay onResume={resume} onRestart={handleRestart} onQuit={onQuit} />
+        <PauseOverlay onResume={resume} onRestart={handleRestart} onQuit={handleQuit} />
       )}
       {gameState.isGameOver && (
         <GameOverOverlay
@@ -100,6 +160,7 @@ export function GameScreen({ gameConfig, onQuit, addXP }: GameScreenProps) {
           entries={entries}
           currentRank={currentRank}
           xpResult={xpResult}
+          gameStats={lastGameStats}
           onPlayAgain={handleRestart}
           onMainMenu={onQuit}
         />

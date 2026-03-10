@@ -3,6 +3,7 @@ import { GameMode } from '../engine';
 import { useMenuNavigation, type MenuItemType } from '../hooks/useMenuNavigation';
 import { type ScoreEntry } from '../hooks/useScoreboard';
 import { type XPGainResult } from '../hooks/usePlayerXP';
+import { formatGameTime, type GameStats } from '../stats';
 
 interface GameOverOverlayProps {
   score: number;
@@ -12,6 +13,7 @@ interface GameOverOverlayProps {
   entries: ScoreEntry[];
   currentRank: number | null;
   xpResult: XPGainResult | null;
+  gameStats: GameStats | null;
   onPlayAgain: () => void;
   onMainMenu: () => void;
 }
@@ -24,6 +26,7 @@ export function GameOverOverlay({
   entries,
   currentRank,
   xpResult,
+  gameStats,
   onPlayAgain,
   onMainMenu,
 }: GameOverOverlayProps) {
@@ -63,6 +66,34 @@ export function GameOverOverlay({
               {xpResult.xpRequiredForLevel > 0 && (
                 <> — {xpResult.newXPInLevel.toLocaleString()} / {xpResult.xpRequiredForLevel.toLocaleString()} XP</>
               )}
+            </div>
+          </div>
+        )}
+        {gameStats && (
+          <div className="game-stats-breakdown">
+            <div className="stats-row">
+              <span>Pieces</span><span>{gameStats.piecesPlaced}</span>
+            </div>
+            <div className="stats-row">
+              <span>Hard Drops</span><span>{gameStats.hardDrops}</span>
+            </div>
+            <div className="stats-row">
+              <span>Holds</span><span>{gameStats.holdsUsed}</span>
+            </div>
+            {gameStats.singles > 0 && <div className="stats-row"><span>Singles</span><span>{gameStats.singles}</span></div>}
+            {gameStats.doubles > 0 && <div className="stats-row"><span>Doubles</span><span>{gameStats.doubles}</span></div>}
+            {gameStats.triples > 0 && <div className="stats-row"><span>Triples</span><span>{gameStats.triples}</span></div>}
+            {gameStats.quads > 0 && <div className="stats-row"><span>Tetrises</span><span>{gameStats.quads}</span></div>}
+            {(gameStats.tSpinSingles + gameStats.tSpinDoubles + gameStats.tSpinTriples + gameStats.tSpinZeros) > 0 && (
+              <div className="stats-row"><span>T-Spins</span><span>{gameStats.tSpinZeros + gameStats.tSpinSingles + gameStats.tSpinDoubles + gameStats.tSpinTriples}</span></div>
+            )}
+            {(gameStats.tSpinMiniZeros + gameStats.tSpinMiniSingles + gameStats.tSpinMiniDoubles) > 0 && (
+              <div className="stats-row"><span>T-Spin Minis</span><span>{gameStats.tSpinMiniZeros + gameStats.tSpinMiniSingles + gameStats.tSpinMiniDoubles}</span></div>
+            )}
+            {gameStats.maxCombo > 0 && <div className="stats-row"><span>Max Combo</span><span>{gameStats.maxCombo}</span></div>}
+            {gameStats.backToBacks > 0 && <div className="stats-row"><span>Back-to-Back</span><span>{gameStats.backToBacks}</span></div>}
+            <div className="stats-row">
+              <span>Time</span><span>{formatGameTime(gameStats.elapsedMs)}</span>
             </div>
           </div>
         )}
