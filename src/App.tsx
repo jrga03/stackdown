@@ -7,6 +7,7 @@ import { SettingsScreen } from './ui/SettingsScreen';
 import { ScoreboardScreen } from './ui/ScoreboardScreen';
 import { VersusPreMatchScreen } from './ui/VersusPreMatchScreen';
 import { VersusScreen } from './ui/VersusScreen';
+import { MenuBackground } from './ui/MenuBackground';
 import { usePlayerXP } from './hooks/usePlayerXP';
 import { GameMode, type GameConfig } from './engine';
 
@@ -33,8 +34,11 @@ export function App() {
     setScreen('versus');
   };
 
+  const isMenuScreen = screen !== 'game' && screen !== 'versus';
+
   return (
     <>
+      {isMenuScreen && <MenuBackground />}
       {screen === 'menu' && (
         <MainMenu
           onPlay={() => setScreen('mode-select')}

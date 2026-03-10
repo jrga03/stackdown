@@ -1,7 +1,9 @@
 .main-menu {
   width: 100vw;
   height: 100vh;
-  background: #0A0A12;
+  background: transparent;
+  position: relative;
+  z-index: 1;
   color: #fff;
   font-family: 'Segoe UI', Arial, sans-serif;
   display: flex;
