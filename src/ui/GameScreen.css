@@ -146,3 +146,30 @@
 .scoreboard-row { display: flex; justify-content: center; gap: 16px; font-size: 14px; color: rgba(255,255,255,0.6); }
 .scoreboard-row-highlight { color: #FFD600; font-weight: bold; }
 .scoreboard-header { font-size: 11px; font-weight: bold; color: rgba(255,255,255,0.4); letter-spacing: 2px; text-align: center; }
+
+/* XP display */
+
+.xp-section {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.xp-gained {
+  font-size: 20px;
+  font-weight: bold;
+  color: #00E676;
+}
+
+.level-up-notice {
+  font-size: 24px;
+  font-weight: bold;
+  color: #FFD600;
+  letter-spacing: 2px;
+  animation: pulse 0.5s ease-in-out infinite alternate;
+}
+
+.xp-progress {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 4px;
+}

@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { MainMenu } from './ui/MainMenu';
 import { ModeSelectScreen } from './ui/ModeSelectScreen';
+import { GameConfigScreen } from './ui/GameConfigScreen';
 import { GameScreen } from './ui/GameScreen';
 import { SettingsScreen } from './ui/SettingsScreen';
 import { ScoreboardScreen } from './ui/ScoreboardScreen';
 import { VersusPreMatchScreen } from './ui/VersusPreMatchScreen';
 import { VersusScreen } from './ui/VersusScreen';
-import { useVersusLevel } from './hooks/useVersusLevel';
+import { usePlayerXP } from './hooks/usePlayerXP';
 import { GameMode, type GameConfig } from './engine';
 
-type Screen = 'menu' | 'mode-select' | 'game' | 'settings' | 'scoreboard' | 'versus-prematch' | 'versus';
+type Screen = 'menu' | 'mode-select' | 'marathon-config' | 'practice-config' | 'game' | 'settings' | 'scoreboard' | 'versus-prematch' | 'versus';
 
 export function App() {
   const [screen, setScreen] = useState<Screen>('menu');
@@ -19,7 +20,7 @@ export function App() {
   });
   const [versusGravity, setVersusGravity] = useState(1);
   const [versusKey, setVersusKey] = useState(0);
-  const { level: versusLevel, rankLabel } = useVersusLevel();
+  const playerXP = usePlayerXP();
 
   const handleStartGame = (config: GameConfig) => {
     setGameConfig(config);
@@ -39,13 +40,30 @@ export function App() {
           onPlay={() => setScreen('mode-select')}
           onScores={() => setScreen('scoreboard')}
           onSettings={() => setScreen('settings')}
+          playerLevel={playerXP.level}
+          rankLabel={playerXP.rankLabel}
         />
       )}
       {screen === 'mode-select' && (
         <ModeSelectScreen
-          onStart={handleStartGame}
+          onMarathon={() => setScreen('marathon-config')}
+          onPractice={() => setScreen('practice-config')}
           onVersus={() => setScreen('versus-prematch')}
           onBack={() => setScreen('menu')}
+        />
+      )}
+      {screen === 'marathon-config' && (
+        <GameConfigScreen
+          mode={GameMode.MARATHON}
+          onStart={handleStartGame}
+          onBack={() => setScreen('mode-select')}
+        />
+      )}
+      {screen === 'practice-config' && (
+        <GameConfigScreen
+          mode={GameMode.PRACTICE}
+          onStart={handleStartGame}
+          onBack={() => setScreen('mode-select')}
         />
       )}
       {screen === 'settings' && (
@@ -62,12 +80,13 @@ export function App() {
         <GameScreen
           gameConfig={gameConfig}
           onQuit={() => setScreen('menu')}
+          addXP={playerXP.addXP}
         />
       )}
       {screen === 'versus-prematch' && (
         <VersusPreMatchScreen
-          currentLevel={versusLevel}
-          rankLabel={rankLabel}
+          currentLevel={playerXP.level}
+          rankLabel={playerXP.rankLabel}
           onStart={handleStartVersus}
           onBack={() => setScreen('mode-select')}
         />
@@ -76,6 +95,7 @@ export function App() {
         <VersusScreen
           key={versusKey}
           gravityLevel={versusGravity}
+          playerXP={playerXP}
           onQuit={() => setScreen('menu')}
           onRematch={handleStartVersus}
         />

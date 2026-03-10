@@ -6,9 +6,11 @@ interface MainMenuProps {
   onPlay: () => void;
   onScores: () => void;
   onSettings: () => void;
+  playerLevel: number;
+  rankLabel: string;
 }
 
-export function MainMenu({ onPlay, onScores, onSettings }: MainMenuProps) {
+export function MainMenu({ onPlay, onScores, onSettings, playerLevel, rankLabel }: MainMenuProps) {
   const items: MenuItemType[] = useMemo(
     () => [
       { kind: 'button', onActivate: onPlay },
@@ -23,6 +25,7 @@ export function MainMenu({ onPlay, onScores, onSettings }: MainMenuProps) {
   return (
     <div className="main-menu">
       <h1 className="game-title">STACKDOWN</h1>
+      <div className="player-level">Level {playerLevel} — {rankLabel}</div>
       <div className="menu-buttons">
         <button className={`menu-button ${getItemProps(0).className}`} onMouseEnter={getItemProps(0).onMouseEnter} onClick={getItemProps(0).onClick}>
           PLAY

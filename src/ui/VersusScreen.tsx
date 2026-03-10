@@ -1,8 +1,8 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
 import { GameMode, type GameSnapshot } from '../engine';
 import { useVersusSession } from './useVersusSession';
-import { useVersusLevel } from '../hooks/useVersusLevel';
 import { useScoreboard } from '../hooks/useScoreboard';
+import { type PlayerXP, type XPGainResult } from '../hooks/usePlayerXP';
 import { VersusHUDLeft, VersusHUDRight } from './VersusHUD';
 import { HUD } from './HUD';
 import { PauseOverlay } from './PauseOverlay';
@@ -11,32 +11,33 @@ import './GameScreen.css';
 
 interface VersusScreenProps {
   gravityLevel: number;
+  playerXP: PlayerXP;
   onQuit: () => void;
   onRematch: (gravityLevel: number) => void;
 }
 
-export function VersusScreen({ gravityLevel, onQuit, onRematch }: VersusScreenProps) {
+export function VersusScreen({ gravityLevel, playerXP, onQuit, onRematch }: VersusScreenProps) {
   const playerCanvasRef = useRef<HTMLCanvasElement>(null);
   const aiCanvasRef = useRef<HTMLCanvasElement>(null);
+  const { addXP } = playerXP;
 
-  const { level: aiLevel, rankLabel, recordWin, recordLoss } = useVersusLevel();
-  const [previousLevel] = useState(aiLevel);
+  const [aiLevel] = useState(() => {
+    const variance = Math.floor(Math.random() * 11) - 5; // -5 to +5
+    return Math.max(1, Math.min(100, playerXP.level + variance));
+  });
   const { addScore } = useScoreboard();
+  const [xpResult, setXpResult] = useState<XPGainResult | null>(null);
 
   const handleMatchEnd = useCallback(
-    (result: 'win' | 'lose', playerSnap: GameSnapshot) => {
-      if (result === 'win') {
-        recordWin();
-      } else {
-        recordLoss();
-      }
+    (_result: 'win' | 'lose', playerSnap: GameSnapshot) => {
+      setXpResult(addXP(playerSnap.score));
       addScore(GameMode.VERSUS, {
         score: playerSnap.score,
         level: gravityLevel,
         lines: playerSnap.linesCleared,
       });
     },
-    [recordWin, recordLoss, addScore, gravityLevel],
+    [addXP, addScore, gravityLevel],
   );
 
   const { gameState, resume, resizePlayer, resizeAI } = useVersusSession(
@@ -174,9 +175,7 @@ export function VersusScreen({ gravityLevel, onQuit, onRematch }: VersusScreenPr
           playerKOs={gameState.playerKOs}
           aiKOs={gameState.aiKOs}
           matchEndReason={gameState.matchEndReason}
-          previousLevel={previousLevel}
-          newLevel={aiLevel}
-          rankLabel={rankLabel}
+          xpResult={xpResult}
           onRematch={handleRematch}
           onMainMenu={onQuit}
         />

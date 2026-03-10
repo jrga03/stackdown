@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { GameMode } from '../engine';
 import { useMenuNavigation, type MenuItemType } from '../hooks/useMenuNavigation';
 import { type ScoreEntry } from '../hooks/useScoreboard';
+import { type XPGainResult } from '../hooks/usePlayerXP';
 
 interface GameOverOverlayProps {
   score: number;
@@ -10,6 +11,7 @@ interface GameOverOverlayProps {
   gameMode: GameMode;
   entries: ScoreEntry[];
   currentRank: number | null;
+  xpResult: XPGainResult | null;
   onPlayAgain: () => void;
   onMainMenu: () => void;
 }
@@ -21,6 +23,7 @@ export function GameOverOverlay({
   gameMode,
   entries,
   currentRank,
+  xpResult,
   onPlayAgain,
   onMainMenu,
 }: GameOverOverlayProps) {
@@ -49,6 +52,20 @@ export function GameOverOverlay({
           <div>Level: {level}</div>
           <div>Lines: {lines}</div>
         </div>
+        {xpResult && (
+          <div className="xp-section">
+            <div className="xp-gained">+{xpResult.xpGained.toLocaleString()} XP</div>
+            {xpResult.didLevelUp && (
+              <div className="level-up-notice">LEVEL UP!</div>
+            )}
+            <div className="xp-progress">
+              Level {xpResult.newLevel}
+              {xpResult.xpRequiredForLevel > 0 && (
+                <> — {xpResult.newXPInLevel.toLocaleString()} / {xpResult.xpRequiredForLevel.toLocaleString()} XP</>
+              )}
+            </div>
+          </div>
+        )}
         <div className="scoreboard-header">TOP 5</div>
         <div className="scoreboard-list">
           {Array.from({ length: 5 }, (_, i) => {

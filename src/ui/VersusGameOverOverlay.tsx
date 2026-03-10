@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useMenuNavigation, type MenuItemType } from '../hooks/useMenuNavigation';
 import { type MatchEndReason } from '../game/VersusSession';
+import { type XPGainResult, getRankLabel } from '../hooks/usePlayerXP';
 
 interface VersusGameOverOverlayProps {
   result: 'win' | 'lose';
@@ -9,9 +10,7 @@ interface VersusGameOverOverlayProps {
   playerKOs: number;
   aiKOs: number;
   matchEndReason: MatchEndReason | null;
-  previousLevel: number;
-  newLevel: number;
-  rankLabel: string;
+  xpResult: XPGainResult | null;
   onRematch: () => void;
   onMainMenu: () => void;
 }
@@ -29,9 +28,7 @@ export function VersusGameOverOverlay({
   playerKOs,
   aiKOs,
   matchEndReason,
-  previousLevel,
-  newLevel,
-  rankLabel,
+  xpResult,
   onRematch,
   onMainMenu,
 }: VersusGameOverOverlayProps) {
@@ -44,9 +41,6 @@ export function VersusGameOverOverlay({
   );
 
   const { getItemProps } = useMenuNavigation({ items, onEscape: onMainMenu });
-
-  const levelChange = newLevel - previousLevel;
-  const levelChangeText = levelChange > 0 ? `+${levelChange}` : `${levelChange}`;
 
   const reasonLabel = matchEndReason ? REASON_LABELS[matchEndReason] ?? '' : '';
 
@@ -68,14 +62,20 @@ export function VersusGameOverOverlay({
             KOs: You {playerKOs} — AI {aiKOs}
           </div>
         </div>
-        <div style={{ marginBottom: '16px' }}>
-          <div style={{ fontSize: '16px', color: 'rgba(255,255,255,0.6)' }}>
-            Level {previousLevel} → {newLevel} ({levelChangeText})
+        {xpResult && (
+          <div className="xp-section">
+            <div className="xp-gained">+{xpResult.xpGained.toLocaleString()} XP</div>
+            {xpResult.didLevelUp && (
+              <div className="level-up-notice">LEVEL UP!</div>
+            )}
+            <div className="xp-progress">
+              Level {xpResult.newLevel} — {getRankLabel(xpResult.newLevel)}
+              {xpResult.xpRequiredForLevel > 0 && (
+                <> ({xpResult.newXPInLevel.toLocaleString()} / {xpResult.xpRequiredForLevel.toLocaleString()} XP)</>
+              )}
+            </div>
           </div>
-          <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.4)' }}>
-            Rank: {rankLabel}
-          </div>
-        </div>
+        )}
         <button
           className={`menu-button ${getItemProps(0).className}`}
           onMouseEnter={getItemProps(0).onMouseEnter}

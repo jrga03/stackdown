@@ -5,14 +5,16 @@ import { PauseOverlay } from './PauseOverlay';
 import { GameOverOverlay } from './GameOverOverlay';
 import { useScoreboard } from '../hooks/useScoreboard';
 import { type GameConfig, GameMode } from '../engine';
+import { type XPGainResult } from '../hooks/usePlayerXP';
 import './GameScreen.css';
 
 interface GameScreenProps {
   gameConfig: GameConfig;
   onQuit: () => void;
+  addXP: (xp: number) => XPGainResult;
 }
 
-export function GameScreen({ gameConfig, onQuit }: GameScreenProps) {
+export function GameScreen({ gameConfig, onQuit, addXP }: GameScreenProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { gameState, resume, restart, resize } = useGameSession(
     canvasRef,
@@ -20,8 +22,9 @@ export function GameScreen({ gameConfig, onQuit }: GameScreenProps) {
   );
   const { scoreboard, addScore } = useScoreboard();
   const [currentRank, setCurrentRank] = useState<number | null>(null);
+  const [xpResult, setXpResult] = useState<XPGainResult | null>(null);
 
-  // Record score when game ends
+  // Record score and XP when game ends
   useEffect(() => {
     if (gameState.isGameOver) {
       const { rank } = addScore(gameState.gameMode, {
@@ -30,6 +33,7 @@ export function GameScreen({ gameConfig, onQuit }: GameScreenProps) {
         lines: gameState.linesCleared,
       });
       setCurrentRank(rank);
+      setXpResult(addXP(gameState.score));
     }
   }, [gameState.isGameOver]);
 
@@ -41,6 +45,7 @@ export function GameScreen({ gameConfig, onQuit }: GameScreenProps) {
   // Reset rank on restart
   const handleRestart = () => {
     setCurrentRank(null);
+    setXpResult(null);
     restart();
   };
 
@@ -94,6 +99,7 @@ export function GameScreen({ gameConfig, onQuit }: GameScreenProps) {
           gameMode={gameState.gameMode}
           entries={entries}
           currentRank={currentRank}
+          xpResult={xpResult}
           onPlayAgain={handleRestart}
           onMainMenu={onQuit}
         />
