@@ -13,9 +13,10 @@ import './GameScreen.css';
 
 interface VersusScreenProps {
   gravityLevel: number;
+  kosToWin: number;
   playerXP: PlayerXP;
   onQuit: () => void;
-  onRematch: (gravityLevel: number) => void;
+  onRematch: (gravityLevel: number, kosToWin: number) => void;
   recordGame: (
     gameStats: GameStats,
     mode: GameMode,
@@ -23,7 +24,7 @@ interface VersusScreenProps {
   ) => void;
 }
 
-export function VersusScreen({ gravityLevel, playerXP, onQuit, onRematch, recordGame }: VersusScreenProps) {
+export function VersusScreen({ gravityLevel, kosToWin, playerXP, onQuit, onRematch, recordGame }: VersusScreenProps) {
   const playerCanvasRef = useRef<HTMLCanvasElement>(null);
   const aiCanvasRef = useRef<HTMLCanvasElement>(null);
   const { addXP } = playerXP;
@@ -57,6 +58,7 @@ export function VersusScreen({ gravityLevel, playerXP, onQuit, onRematch, record
     aiCanvasRef,
     aiLevel,
     gravityLevel,
+    kosToWin,
     handleMatchEnd,
   );
 
@@ -136,8 +138,8 @@ export function VersusScreen({ gravityLevel, playerXP, onQuit, onRematch, record
   }, [resizePlayer, resizeAI]);
 
   const handleRematch = useCallback(() => {
-    onRematch(gravityLevel);
-  }, [gravityLevel, onRematch]);
+    onRematch(gravityLevel, kosToWin);
+  }, [gravityLevel, kosToWin, onRematch]);
 
   return (
     <div className="game-screen">

@@ -13,7 +13,7 @@ import { AIController } from '../ai';
 import { VersusLoop } from './VersusLoop';
 
 const MATCH_DURATION_MS = 120_000;
-const KOS_TO_LOSE = 2;
+const DEFAULT_KOS_TO_WIN = 2;
 
 export type MatchEndReason = 'knockout' | 'topout' | 'timeout';
 
@@ -63,13 +63,16 @@ export class VersusSession {
   private aiLocked = false;
   private handlingSideGameOver = false;
   private destroyed = false;
+  private kosToWin: number;
 
   constructor(
     playerCanvas: HTMLCanvasElement,
     aiCanvas: HTMLCanvasElement,
     aiLevel: number,
     gravityLevel: number,
+    kosToWin: number = DEFAULT_KOS_TO_WIN,
   ) {
+    this.kosToWin = kosToWin;
     // Create event buses
     this.playerEventBus = new EventBus();
     this.aiEventBus = new EventBus();
@@ -255,13 +258,13 @@ export class VersusSession {
       // Has garbage = knockout
       if (side === 'player') {
         this.playerKOs++;
-        if (this.playerKOs >= KOS_TO_LOSE) {
+        if (this.playerKOs >= this.kosToWin) {
           this.endMatch('lose', 'knockout');
           return;
         }
       } else {
         this.aiKOs++;
-        if (this.aiKOs >= KOS_TO_LOSE) {
+        if (this.aiKOs >= this.kosToWin) {
           this.endMatch('win', 'knockout');
           return;
         }

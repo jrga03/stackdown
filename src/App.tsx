@@ -22,6 +22,7 @@ export function App() {
     startLevel: 1,
   });
   const [versusGravity, setVersusGravity] = useState(1);
+  const [versusKosToWin, setVersusKosToWin] = useState(2);
   const [versusKey, setVersusKey] = useState(0);
   const playerXP = usePlayerXP();
   const playerStats = usePlayerStats();
@@ -31,8 +32,9 @@ export function App() {
     setScreen('game');
   };
 
-  const handleStartVersus = (gravityLevel: number) => {
+  const handleStartVersus = (gravityLevel: number, kosToWin: number) => {
     setVersusGravity(gravityLevel);
+    setVersusKosToWin(kosToWin);
     setVersusKey((k) => k + 1);
     setScreen('versus');
   };
@@ -110,6 +112,7 @@ export function App() {
         <VersusScreen
           key={versusKey}
           gravityLevel={versusGravity}
+          kosToWin={versusKosToWin}
           playerXP={playerXP}
           onQuit={() => setScreen('menu')}
           onRematch={handleStartVersus}

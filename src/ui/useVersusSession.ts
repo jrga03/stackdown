@@ -34,6 +34,7 @@ export function useVersusSession(
   aiCanvasRef: React.RefObject<HTMLCanvasElement | null>,
   aiLevel: number,
   gravityLevel: number,
+  kosToWin: number,
   onMatchEnd?: (result: 'win' | 'lose', playerSnapshot: GameSnapshot) => void,
 ) {
   const sessionRef = useRef<VersusSession | null>(null);
@@ -71,6 +72,7 @@ export function useVersusSession(
       aiCanvasRef.current,
       aiLevelRef.current,
       gravityLevel,
+      kosToWin,
     );
     sessionRef.current = session;
 
@@ -112,7 +114,7 @@ export function useVersusSession(
       session.destroy();
       sessionRef.current = null;
     };
-  }, [gravityLevel]);
+  }, [gravityLevel, kosToWin]);
 
   const resume = useCallback(() => sessionRef.current?.resume(), []);
   const resizePlayer = useCallback(

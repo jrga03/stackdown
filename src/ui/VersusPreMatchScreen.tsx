@@ -5,7 +5,7 @@ import './MainMenu.css';
 interface VersusPreMatchScreenProps {
   currentLevel: number;
   rankLabel: string;
-  onStart: (gravityLevel: number) => void;
+  onStart: (gravityLevel: number, kosToWin: number) => void;
   onBack: () => void;
 }
 
@@ -16,6 +16,7 @@ export function VersusPreMatchScreen({
   onBack,
 }: VersusPreMatchScreenProps) {
   const [gravityLevel, setGravityLevel] = useState(1);
+  const [kosToWin, setKosToWin] = useState(2);
 
   const items: MenuItemType[] = useMemo(
     () => [
@@ -27,10 +28,18 @@ export function VersusPreMatchScreen({
         step: 1,
         onChange: setGravityLevel,
       },
-      { kind: 'button' as const, onActivate: () => onStart(gravityLevel) },
+      {
+        kind: 'slider' as const,
+        value: kosToWin,
+        min: 1,
+        max: 10,
+        step: 1,
+        onChange: setKosToWin,
+      },
+      { kind: 'button' as const, onActivate: () => onStart(gravityLevel, kosToWin) },
       { kind: 'button' as const, onActivate: onBack },
     ],
-    [gravityLevel, onStart, onBack],
+    [gravityLevel, kosToWin, onStart, onBack],
   );
 
   const { getItemProps } = useMenuNavigation({ items, onEscape: onBack });
@@ -71,18 +80,41 @@ export function VersusPreMatchScreen({
           ← → to adjust
         </div>
       </div>
+      <div
+        className={`menu-row ${getItemProps(1).className}`}
+        onMouseEnter={getItemProps(1).onMouseEnter}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 8,
+          padding: '4px',
+        }}
+      >
+        <label>KOs to Win: {kosToWin}</label>
+        <input
+          type="range"
+          min={1}
+          max={10}
+          value={kosToWin}
+          onChange={(e) => setKosToWin(Number(e.target.value))}
+        />
+        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>
+          ← → to adjust
+        </div>
+      </div>
       <div className="menu-buttons">
-        <button
-          className={`menu-button ${getItemProps(1).className}`}
-          onMouseEnter={getItemProps(1).onMouseEnter}
-          onClick={getItemProps(1).onClick}
-        >
-          START MATCH
-        </button>
         <button
           className={`menu-button ${getItemProps(2).className}`}
           onMouseEnter={getItemProps(2).onMouseEnter}
           onClick={getItemProps(2).onClick}
+        >
+          START MATCH
+        </button>
+        <button
+          className={`menu-button ${getItemProps(3).className}`}
+          onMouseEnter={getItemProps(3).onMouseEnter}
+          onClick={getItemProps(3).onClick}
         >
           BACK
         </button>
