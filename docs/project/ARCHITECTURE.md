@@ -2,7 +2,7 @@
 
 ## Overview
 
-Stackdown is a browser-based block-stacking game built with Canvas 2D, React, and TypeScript. The initial release includes two single-player modes: **Marathon** (15 levels, topout-based) and **Practice** (fixed gravity level, 2-minute timer). The architecture is designed for multiplayer readiness — the engine is pure TypeScript with zero browser dependencies and can run on a server.
+Stackdown is a browser-based block-stacking game built with Canvas 2D, React, and TypeScript. Game modes include **Marathon** (15 levels, topout-based), **Practice** (fixed gravity level, 2-minute timer), and **Versus** (player vs AI with garbage exchange and KO system). The engine is pure TypeScript with zero browser dependencies, enabling future server-side execution for online play.
 
 ## System Diagram
 
@@ -102,12 +102,17 @@ stackdown/
 ├── tsconfig.json
 ├── vite.config.ts
 ├── docs/                        # Documentation
-│   ├── ARCHITECTURE.md          # This file
-│   ├── ENGINE.md                # Engine module spec
-│   ├── RENDERER.md              # Renderer module spec
-│   ├── INPUT.md                 # Input system spec
-│   ├── UI.md                    # React UI spec
-│   └── TASKS.md                 # Implementation task breakdown
+│   ├── game/
+│   │   ├── ENGINE.md            # Engine module spec
+│   │   ├── RENDERER.md          # Renderer module spec
+│   │   ├── INPUT.md             # Input system spec
+│   │   └── UI.md                # React UI spec
+│   ├── multiplayer/
+│   │   ├── VERSUS.md            # Versus mode mechanics (garbage, KOs, match flow)
+│   │   └── MULTIPLAYER.md       # Online networking spec (WebSocket, rooms, sync)
+│   └── project/
+│       ├── ARCHITECTURE.md      # This file
+│       └── TASKS.md             # Implementation task breakdown
 ├── src/
 │   ├── main.tsx                 # Entry point
 │   ├── App.tsx                  # Root React component
@@ -204,7 +209,7 @@ stackdown/
 ### Why Decoupled Engine
 
 - **Testability:** Pure functions and classes with no browser dependencies. Unit tests run fast without mocking DOM.
-- **Multiplayer readiness:** The engine can run on a Node.js server for authoritative game state. Snapshots are plain serializable objects.
+- **Multiplayer support:** The engine runs in Node.js for server-side use. Snapshots are plain serializable objects, enabling network sync.
 - **Replay/spectator:** Deterministic engine + seeded randomizer = replayable games.
 - **Separation of concerns:** Rendering and input are completely independent of game logic.
 
@@ -260,14 +265,15 @@ When paused:
 - Snapshots reflect the frozen state — the renderer draws the last frame before pause.
 - When resumed, all timers resume from where they paused (accumulated time is preserved, not reset).
 
-## Multiplayer Readiness
+## Multiplayer Architecture
 
-The architecture includes several provisions for future multiplayer:
+Local versus (player vs AI) is implemented. Online versus (player vs player over WebSocket) is the next milestone. See `docs/multiplayer/VERSUS.md` for versus mechanics and `docs/multiplayer/MULTIPLAYER.md` for the online networking spec.
 
-1. **Server-capable engine:** Zero browser dependencies. Can `npm install` the engine package on a Node.js server.
+Key architectural properties that enable multiplayer:
+
+1. **Server-capable engine:** Zero browser dependencies. The engine runs in Node.js without modification.
 2. **Serializable snapshots:** `GameSnapshot` contains only plain objects — no functions, no circular references. `JSON.stringify` works directly.
-3. **Seeded randomizer:** The 7-bag randomizer accepts an optional seed (using xorshift128+ or mulberry32 PRNG), enabling deterministic sequences across clients.
-4. **Snapshot reconstruction:** `GameEngine.fromSnapshot(snapshot, eventBus)` can reconstruct engine state from a snapshot, enabling server reconciliation.
-5. **Attack system interface:** `Board.insertGarbageRows(count, gapColumn)` is stubbed. The `AttackTable` type defines attack values for all clear types.
-6. **EventBus:** Events like `LINE_CLEAR` carry enough data to calculate attack lines. A future `MultiplayerSession` subscribes to these events and routes attacks between players.
-7. **Architecture for two players:** `MultiplayerSession` creates two `GameEngine` instances and an `AttackCalculator` to route garbage between them.
+3. **Seeded randomizer:** The 7-bag randomizer accepts an optional seed, enabling deterministic sequences across clients.
+4. **Attack system:** `ATTACK_SENT` events, `GarbageManager`, and `Board.pushGarbageRows()` handle garbage exchange. `VersusSession` coordinates two engines with net-cancel logic.
+5. **EventBus:** Events carry full data for attack calculation, stats tracking, and network sync.
+6. **Dual-engine architecture:** `VersusSession` runs two `GameEngine` instances with a shared `GarbageManager`. Online mode replaces the second engine with a `NetworkAdapter` that relays state from the remote player.

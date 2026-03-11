@@ -20,7 +20,7 @@ Browser-based block-stacking game with two single-player modes: Marathon (15 lev
 
 ## Architecture
 
-Three-layer architecture. See `docs/ARCHITECTURE.md` for the full system diagram.
+Three-layer architecture. See `docs/project/ARCHITECTURE.md` for the full system diagram.
 
 - **Engine** (`src/engine/`) — Pure TS game logic. Board, SRS rotation, scoring, gravity, lock delay, T-Spin detection, EventBus. Zero DOM imports — runnable in Node.
 - **Renderer** (`src/renderer/`) — Canvas 2D drawing. Receives `GameSnapshot`, draws playfield, pieces, ghost, effects. Uses `OffscreenCanvas` for grid caching.
@@ -60,9 +60,13 @@ Three-layer architecture. See `docs/ARCHITECTURE.md` for the full system diagram
 
 ## Spec Docs
 
-Detailed design specs live in `docs/` for reference when modifying behavior:
+Detailed design specs live in `docs/` organized by domain:
 
-- `docs/ENGINE.md` — Types, board, pieces, SRS, gravity, scoring, T-Spin, lock delay, events, GameEngine API
-- `docs/RENDERER.md` — Block rendering, colors, grid, ghost piece, animations, text popups
-- `docs/INPUT.md` — Key bindings, DAS/ARR algorithm, direction priority
-- `docs/UI.md` — Screen flow, components, HUD, layout, personal bests, settings
+- `docs/game/ENGINE.md` — Types, board, pieces, SRS, gravity, scoring, T-Spin, lock delay, events, GameEngine API
+- `docs/game/RENDERER.md` — Block rendering, colors, grid, ghost piece, animations, text popups
+- `docs/game/INPUT.md` — Key bindings, DAS/ARR algorithm, direction priority
+- `docs/game/UI.md` — Screen flow, components, HUD, layout, personal bests, settings
+- `docs/multiplayer/VERSUS.md` — Versus mode mechanics: garbage exchange, KO system, match lifecycle
+- `docs/multiplayer/MULTIPLAYER.md` — Online networking: WebSocket relay, room management, state sync protocol
+- `docs/project/ARCHITECTURE.md` — System diagram, data flow, project structure, design decisions
+- `docs/project/TASKS.md` — Implementation task breakdown
