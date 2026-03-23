@@ -88,6 +88,13 @@ export class TextPopupManager {
       }),
     );
 
+    // Subscribe to PERFECT_CLEAR
+    this.unsubscribers.push(
+      eventBus.on(GameEventType.PERFECT_CLEAR, (_event) => {
+        this.addPopup('PERFECT CLEAR', TEXT_POPUP_COLORS.perfectClear, DEFAULT_FONT_SIZE + 8);
+      }),
+    );
+
     // Subscribe to GAME_OVER for practice mode "TIME'S UP!"
     this.unsubscribers.push(
       eventBus.on(GameEventType.GAME_OVER, (event) => {
