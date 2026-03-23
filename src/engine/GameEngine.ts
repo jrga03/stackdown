@@ -18,6 +18,7 @@ import {
   TSPIN_ATTACK_TABLE,
   TSPIN_MINI_ATTACK_TABLE,
   BACK_TO_BACK_ATTACK_BONUS,
+  PERFECT_CLEAR_ATTACK,
   COMBO_ATTACK_TABLE,
 } from './constants';
 import { Board } from './Board';
@@ -567,6 +568,11 @@ export class GameEngine {
       if (combo > 0) {
         const comboIndex = Math.min(combo, COMBO_ATTACK_TABLE.length - 1);
         attackLines += COMBO_ATTACK_TABLE[comboIndex] ?? 0;
+      }
+      // Perfect clear bonus — only when board is completely empty after clearing
+      if (this.board.isEmpty()) {
+        attackLines += PERFECT_CLEAR_ATTACK;
+        this.eventBus.emit(GameEventType.PERFECT_CLEAR, { attackLines });
       }
       if (attackLines > 0) {
         this.eventBus.emit(GameEventType.ATTACK_SENT, { lines: attackLines });

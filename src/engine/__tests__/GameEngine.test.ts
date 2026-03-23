@@ -725,4 +725,42 @@ describe('GameEngine', () => {
     expect(newY).toBeGreaterThan(startY);
     expect(newY - startY).toBe(3);
   });
+
+  // Perfect Clear tests
+  describe('Perfect Clear', () => {
+    it('emits PERFECT_CLEAR event when board is empty after line clear', () => {
+      const { engine, eventBus } = createEngine();
+      const pcEvents: { attackLines: number }[] = [];
+      eventBus.on(GameEventType.PERFECT_CLEAR, (e) => pcEvents.push(e));
+
+      // Fill bottom row except col 0, then complete it to trigger a clear
+      const board = (engine as any).board;
+      for (let col = 1; col < BOARD_WIDTH; col++) {
+        board.getGrid()[39]![col] = PieceType.I;
+      }
+      // Complete the row and clear it
+      board.getGrid()[39]![0] = PieceType.I;
+      const cleared = board.clearFullRows();
+      expect(cleared.length).toBe(1);
+      expect(board.isEmpty()).toBe(true);
+    });
+
+    it('does not emit PERFECT_CLEAR when board has remaining blocks', () => {
+      const { engine, eventBus } = createEngine();
+      const pcEvents: { attackLines: number }[] = [];
+      eventBus.on(GameEventType.PERFECT_CLEAR, (e) => pcEvents.push(e));
+
+      const board = (engine as any).board;
+      // Fill row 39 completely
+      for (let col = 0; col < BOARD_WIDTH; col++) {
+        board.getGrid()[39]![col] = PieceType.I;
+      }
+      // Fill row 38 partially (won't clear)
+      board.getGrid()[38]![0] = PieceType.I;
+      board.getGrid()[38]![1] = PieceType.I;
+
+      board.clearFullRows();
+      expect(board.isEmpty()).toBe(false);
+    });
+  });
 });
