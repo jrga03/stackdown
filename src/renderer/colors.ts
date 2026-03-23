@@ -23,4 +23,5 @@ export const TEXT_POPUP_COLORS = {
   tSpin: '#AA00FF',
   combo: '#FFFFFF',
   backToBack: '#FF9100',
+  perfectClear: '#00E5FF',
 } as const;

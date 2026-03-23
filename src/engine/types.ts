@@ -52,6 +52,7 @@ export enum GameEventType {
   TIME_WARNING = 'time_warning',
   GARBAGE_RECEIVED = 'garbage_received',
   ATTACK_SENT = 'attack_sent',
+  PERFECT_CLEAR = 'perfect_clear',
 }
 
 // ── Core Types ──
@@ -141,4 +142,5 @@ export type EventMap = {
   [GameEventType.TIME_WARNING]: { remainingMs: number };
   [GameEventType.GARBAGE_RECEIVED]: { lines: number };
   [GameEventType.ATTACK_SENT]: { lines: number };
+  [GameEventType.PERFECT_CLEAR]: { attackLines: number };
 };

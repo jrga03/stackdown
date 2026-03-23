@@ -84,6 +84,8 @@ export const TSPIN_MINI_ATTACK_TABLE: Record<number, number> = {
 
 export const BACK_TO_BACK_ATTACK_BONUS = 1;
 
+export const PERFECT_CLEAR_ATTACK = 10;
+
 export const COMBO_ATTACK_TABLE: readonly number[] = [
   0, // combo 0
   0, // combo 1
