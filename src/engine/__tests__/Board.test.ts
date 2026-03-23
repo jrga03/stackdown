@@ -301,4 +301,34 @@ describe('Board', () => {
     }
     expect(board.hasGarbage()).toBe(false);
   });
+
+  // Board.isEmpty() tests
+  it('isEmpty returns true for a fresh board', () => {
+    const board = new Board();
+    expect(board.isEmpty()).toBe(true);
+  });
+
+  it('isEmpty returns false when cells are occupied', () => {
+    const board = new Board();
+    board.lockPiece([{ x: 0, y: 39 }], PieceType.I);
+    expect(board.isEmpty()).toBe(false);
+  });
+
+  it('isEmpty returns false when garbage rows exist', () => {
+    const board = new Board();
+    board.pushGarbageRows(1);
+    expect(board.isEmpty()).toBe(false);
+  });
+
+  it('isEmpty returns true after clearing all occupied rows', () => {
+    const board = new Board();
+    // Fill the bottom row completely
+    const blocks = [];
+    for (let col = 0; col < BOARD_WIDTH; col++) {
+      blocks.push({ x: col, y: 39 });
+    }
+    board.lockPiece(blocks, PieceType.I);
+    board.clearFullRows();
+    expect(board.isEmpty()).toBe(true);
+  });
 });

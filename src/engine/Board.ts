@@ -165,6 +165,16 @@ export class Board {
     return true;
   }
 
+  /** Returns true if every cell in the grid is null. */
+  isEmpty(): boolean {
+    for (let row = 0; row < BOARD_HEIGHT; row++) {
+      for (let col = 0; col < BOARD_WIDTH; col++) {
+        if (this.grid[row]![col] !== null) return false;
+      }
+    }
+    return true;
+  }
+
   /** Returns true if the grid contains any GARBAGE cell. */
   hasGarbage(): boolean {
     for (let row = 0; row < BOARD_HEIGHT; row++) {
